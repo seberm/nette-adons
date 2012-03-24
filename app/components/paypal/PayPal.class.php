@@ -26,20 +26,18 @@ class PayPal extends \Nette\Object {
 	private $signature = '';
 
 	private $sbnCode = 'PP-ECWizard';
+private $token;
 
     private $endPoint = '';
     private $paypalURL = '';
 
-    private $session;
-	
-	/*	
-	' Define the PayPal Redirect URLs.  
-	' 	This is the URL that the buyer is first sent to do authorize payment with their paypal account
-	' 	change the URL depending if you are testing on the sandbox or the live PayPal site
-	'
-	' For the sandbox, the URL is       https://www.sandbox.paypal.com/webscr&cmd=_express-checkout&token=
-	' For the live site, the URL is        https://www.paypal.com/webscr&cmd=_express-checkout&token=
-	*/
+    private $error = false;
+
+    /**
+     * @var Nette\ArrayHash
+     */
+    private $errors;
+
 	
     public function __construct($opts = array()) {
 
@@ -72,26 +70,30 @@ class PayPal extends \Nette\Object {
     /**
      * Prepares the parameters for the SetExpressCheckout API Call.
 	 */
-	public function doExpressCheckout($paymentAmount, $currencyCodeType, $paymentType, $returnURL, $cancelURL, \Nette\Http\SessionSection $session)  {
-
-		// Construct the parameter string that describes the SetExpressCheckout API call in the shortcut implementation
-		$nvpstr='&PAYMENTREQUEST_0_AMT='. $paymentAmount;
-		$nvpstr = $nvpstr . '&PAYMENTREQUEST_0_PAYMENTACTION=' . $paymentType;
-		$nvpstr = $nvpstr . '&RETURNURL=' . $returnURL;
-		$nvpstr = $nvpstr . '&CANCELURL=' . $cancelURL;
-		$nvpstr = $nvpstr . '&PAYMENTREQUEST_0_CURRENCYCODE=' . $currencyCodeType;
+	public function doExpressCheckout($paymentAmount, $currencyCodeType, $paymentType, $returnURL, $cancelURL) { 
+//string(230) "&PAYMENTREQUEST_0_AMT=12&PAYMENTREQUEST_0_PAYMENTACTION=Order&RETURNURL=http://localhost/Projects/nette-adons/www/pay-pal/process&CANCELURL=http://localhost/Projects/nette-adons/www/pay-pal/cancel&PAYMENTREQUEST_0_CURRENCYCODE=CZK" 
+        $data = array('PAYMENTREQUEST_0_AMT' => $paymentAmount,
+                      'PAYMENTREQUEST_0_PAYMENTACTION' => $paymentType,
+                      'RETURNURL' => $returnURL,
+                      'CANCELURL' => $cancelURL,
+                      'PAYMENTREQUEST_0_CURRENCYCODE' => $currencyCodeType,
+                     );
 		
-		$session->currencyCodeType = $currencyCodeType;	  
-		$session->PaymentType = $paymentType;
+        // Remember session
+//! todo je nutne si toto pamatovat? nestaci jen token?
+		//$session->currencyCodeType = $currencyCodeType;	  
+		//$session->PaymentType = $paymentType;
 
-	    $resArray = $this->hash_call('SetExpressCheckout', $nvpstr);
+        $query = http_build_query($data);
+
+	    $resArray = $this->hash_call('SetExpressCheckout', $query);
         if (!count($resArray))
             return false;
 
 		$ack = strtoupper($resArray['ACK']);
 		if($ack == 'SUCCESS' || $ack == 'SUCCESSWITHWARNING') {
 			$token = urldecode($resArray['TOKEN']);
-			$session->TOKEN = $token;
+			$this->token = $token;
 		}
 		   
 	    return $resArray;
@@ -235,7 +237,7 @@ class PayPal extends \Nette\Object {
 			curl_setopt ($ch, CURLOPT_PROXY, $host. ':' . $port); 
 
 		//NVPRequest for submitting to server
-		$nvpreq = 'METHOD=' . urlencode($methodName) . '&VERSION=' . urlencode(self::VERSION) . '&PWD=' . urlencode($this->password) . '&USER=' . urlencode($this->username) . '&SIGNATURE=' . urlencode($this->signature) . $nvpStr . '&BUTTONSOURCE=' . urlencode($this->sbnCode);
+		$nvpreq = 'METHOD=' . urlencode($methodName) . '&VERSION=' . urlencode(self::VERSION) . '&PWD=' . urlencode($this->password) . '&USER=' . urlencode($this->username) . '&SIGNATURE=' . urlencode($this->signature) . '&'. $nvpStr . '&BUTTONSOURCE=' . urlencode($this->sbnCode);
 
 		//setting the nvpreq as POST FIELD to curl
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $nvpreq);
@@ -262,9 +264,9 @@ class PayPal extends \Nette\Object {
 	}
 
 
-	public function getURL($token) {
+	public function getURL() {
 
-		return $this->paypalURL . $token;
+		return $this->paypalURL . $this->token;
 	}
 
 	
@@ -305,6 +307,19 @@ class PayPal extends \Nette\Object {
         return $this;
     }
 
+
+    public function isError() {
+
+        return $this->error;
+    }
+
+
+    public function getErrors() {
+
+        return $this->errors;
+    }
+
+
     public function setPassword($password) {
 
         $this->password = $password;
@@ -323,6 +338,7 @@ class PayPal extends \Nette\Object {
         $this->username = $username;
         return $this;
     }
+
 
     public function getPort() {
 

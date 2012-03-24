@@ -58,8 +58,15 @@ class PayPalForm extends Nette\Application\UI\Control {
 
     public function setCredentials(array $params) {
 
-        $this->credentials = \Nette\ArrayHash::from($params);
+        $this->credentials = Nette\ArrayHash::from($params);
 
+        return $this;
+    }
+
+
+    public function setSandBox($stat = true) {
+
+        $this->paypal->setSandbox($stat);
         return $this;
     }
 
@@ -71,7 +78,7 @@ class PayPalForm extends Nette\Application\UI\Control {
         if ($this->translator)
             $form->setTranslator($this->translator);
 
-        $form->addImage('paypal', self::PAYPAL_IMAGE, 'Check out with PayPal');
+        $form->addImage('paypalCheckOut', self::PAYPAL_IMAGE, 'Check out with PayPal');
 
         $form->onSuccess[] = callback($this, 'initPayment');
 
@@ -87,13 +94,12 @@ class PayPalForm extends Nette\Application\UI\Control {
 
         $absoluteProcessUrl = $this->presenter->link('process');
         $absoluteCancelUrl = $this->presenter->link('cancel');
+
+        // Some better way to do it in Nette?
         $returnUrl = (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST']. $absoluteProcessUrl;
         $cancelUrl = (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST']. $absoluteCancelUrl;
 
         $res = $this->paypal->doExpressCheckout($amount, $currencyCode, $paymentType, $returnUrl, $cancelUrl, $this->presenter->session->getSection('paypal'));
-//dump($res);
-//exit;
-
 
         $this->redirectToPaypal();
     }
@@ -108,14 +114,15 @@ class PayPalForm extends Nette\Application\UI\Control {
 
     public function handleCancel() {
 
-
+        echo 'canceled';
+        exit;
     }
 
 
-    public function redirectToPaypal() {
+    private function redirectToPaypal() {
 
-        $url = $this->paypal->getURL($this->presenter->session->getSection('paypal')->token);
-        $this->presenter->redirectUrl($url, 303);
+        $url = $this->paypal->getURL();
+        $this->presenter->redirectUrl($url);
     }
 
 
@@ -127,10 +134,8 @@ class PayPalForm extends Nette\Application\UI\Control {
         $this->paypal->password = $this->credentials->password;
         $this->paypal->signature = $this->credentials->signature;
 
-$this->paypal->setSandbox();
         //$this->paypal->proxyHost = $this->credentials->proxyHost;
         //$this->paypal->proxyPort = $this->credentials->proxyPort;
-        
     }
 
 };
