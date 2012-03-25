@@ -5,19 +5,9 @@ namespace PayPal;
 use Nette,
     Nette\Application\UI\Form;
 
-class PayPalForm extends Nette\Application\UI\Control {
+class PayPalButton extends Nette\Application\UI\Control {
     
     const PAYPAL_IMAGE = 'https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif';
-    const PROCESS_SIG = 'process';
-    const CANCEL_SIG = 'cancel';
-
-    const COMPONENT_NAME = 'paypalForm';
-    /**
-     * Data for payment
-     */
-    private $data = array();
-
-
     /**
      * @var PayPal
      */
@@ -28,6 +18,10 @@ class PayPalForm extends Nette\Application\UI\Control {
      */
     private $translator = NULL;
 
+    /**
+     * @var Nette\Http\Session
+     */
+    private $session;
 
     /**
      * @var Nette\ArrayHash
@@ -42,7 +36,7 @@ class PayPalForm extends Nette\Application\UI\Control {
 
         parent::__construct($parent, $name);
 
-        $this->paypal = new PayPal;
+        $this->paypal = new API;
     }
 
 
@@ -97,11 +91,15 @@ class PayPalForm extends Nette\Application\UI\Control {
 
     public function initPayment(Form $paypalForm) {
 
-        $returnUrl = $this->buildUrl(self::PROCESS_SIG);
-        $cancelUrl = $this->buildUrl(self::CANCEL_SIG);
+        $amount = 12;
+        $currencyCode = 'CZK';
+        $paymentType = 'Order';
+
+        $returnUrl = $this->buildUrl('process');
+        $cancelUrl = $this->buildUrl('cancel');
 
 
-        $res = $this->paypal->doExpressCheckout($this->amount, $this->currencyCode, $this->paymentType, $returnUrl, $cancelUrl, $this->presenter->session->getSection('paypal'));
+        $res = $this->paypal->doExpressCheckout($amount, $currencyCode, $paymentType, $returnUrl, $cancelUrl, $this->presenter->session->getSection('paypal'));
 
         $this->redirectToPaypal();
     }
@@ -111,7 +109,7 @@ class PayPalForm extends Nette\Application\UI\Control {
 
         $data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
 
-        $component = $this->getComponent(self::COMPONENT_NAME);
+        $component = $this->getComponent('paypalForm');
         if ($this->paypal->isError()) {
 
             foreach ($this->paypal->errors as $error)
@@ -161,39 +159,4 @@ class PayPalForm extends Nette\Application\UI\Control {
         // Some better way to do it in Nette?
         return (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST']. $url;
     }
-
-
-    public function setPrice($price) {
-
-        $this->price = $price;
-        return $this;
-    }
-
-    public function setCurrency($currency) {
-
-        $this->currency = $currency;
-        return $this;
-    }
-
-    public function setPaymentType($type) {
-
-        $this->paymentType = $type;
-        return $this;
-    }
-
-
-    /*
-    public function __get($key) {
-
-        return $this->data[$key];
-    }
-
-
-    public function __set($key, $value) {
-
-        $this->data[$key] = $value;
-    }
-     */
-
-
 };

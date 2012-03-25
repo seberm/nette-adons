@@ -1,17 +1,17 @@
-<?php //netteCache[01]000387a:2:{s:4:"time";s:21:"0.94836300 1332491843";s:9:"callbacks";a:2:{i:0;a:3:{i:0;a:2:{i:0;s:19:"Nette\Caching\Cache";i:1;s:9:"checkFile";}i:1;s:65:"/srv/http/Projects/nette-adons/app/templates/PayPal/default.latte";i:2;i:1332490304;}i:1;a:3:{i:0;a:2:{i:0;s:19:"Nette\Caching\Cache";i:1;s:10:"checkConst";}i:1;s:25:"Nette\Framework::REVISION";i:2;s:30:"94abcaa released on 2012-02-29";}}}?><?php
+<?php //netteCache[01]000387a:2:{s:4:"time";s:21:"0.73002200 1332636238";s:9:"callbacks";a:2:{i:0;a:3:{i:0;a:2:{i:0;s:19:"Nette\Caching\Cache";i:1;s:9:"checkFile";}i:1;s:65:"/srv/http/Projects/nette-adons/app/templates/PayPal/default.latte";i:2;i:1332636113;}i:1;a:3:{i:0;a:2:{i:0;s:19:"Nette\Caching\Cache";i:1;s:10:"checkConst";}i:1;s:25:"Nette\Framework::REVISION";i:2;s:30:"94abcaa released on 2012-02-29";}}}?><?php
 
 // source file: /srv/http/Projects/nette-adons/app/templates/PayPal/default.latte
 
 ?><?php
 // prolog Nette\Latte\Macros\CoreMacros
-list($_l, $_g) = Nette\Latte\Macros\CoreMacros::initRuntime($template, 'nl0ozfrz5h')
+list($_l, $_g) = Nette\Latte\Macros\CoreMacros::initRuntime($template, '5memskhqe7')
 ;
 // prolog Nette\Latte\Macros\UIMacros
 //
 // block content
 //
-if (!function_exists($_l->blocks['content'][] = '_lb752c7bbfe1_content')) { function _lb752c7bbfe1_content($_l, $_args) { extract($_args)
-;$_ctrl = $_control->getComponent("paypalForm"); if ($_ctrl instanceof Nette\Application\UI\IRenderable) $_ctrl->validateControl(); $_ctrl->render() ;
+if (!function_exists($_l->blocks['content'][] = '_lbccf288d8b8_content')) { function _lbccf288d8b8_content($_l, $_args) { extract($_args)
+;$_ctrl = $_control->getComponent("paypalButton"); if ($_ctrl instanceof Nette\Application\UI\IRenderable) $_ctrl->validateControl(); $_ctrl->render() ;
 }}
 
 //

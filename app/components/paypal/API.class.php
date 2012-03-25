@@ -3,7 +3,7 @@
 namespace PayPal;
 
 
-class PayPal extends \Nette\Object {
+class API extends \Nette\Object {
 
     const VERSION = '66';
 
