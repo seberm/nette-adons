@@ -11,6 +11,15 @@ final class PayPalPresenter extends BasePresenter {
         $form->setCredentials($credentials)
              ->setSandBox(); // enables paypal sandbox mode (http://developer.paypal.com)
 
+        $form->onSuccess[] = callback($this, 'processOrder');
         return $form;
     }
+
+
+    public function processOrder($data) {
+
+        dump($data);
+        exit;
+    }
+
 }

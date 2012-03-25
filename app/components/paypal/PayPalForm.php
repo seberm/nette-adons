@@ -28,6 +28,9 @@ class PayPalForm extends Nette\Application\UI\Control {
      */
     private $credentials;
 
+    public $onSuccess;
+    public $onError;
+
 
     public function __construct(Nette\ComponentModel\IContainer $parent = NULL, $name = NULL) {
 
@@ -92,12 +95,9 @@ class PayPalForm extends Nette\Application\UI\Control {
         $currencyCode = 'CZK';
         $paymentType = 'Order';
 
-        $absoluteProcessUrl = $this->presenter->link('process');
-        $absoluteCancelUrl = $this->presenter->link('cancel');
+        $returnUrl = $this->buildUrl('process');
+        $cancelUrl = $this->buildUrl('cancel');
 
-        // Some better way to do it in Nette?
-        $returnUrl = (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST']. $absoluteProcessUrl;
-        $cancelUrl = (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST']. $absoluteCancelUrl;
 
         $res = $this->paypal->doExpressCheckout($amount, $currencyCode, $paymentType, $returnUrl, $cancelUrl, $this->presenter->session->getSection('paypal'));
 
@@ -107,15 +107,28 @@ class PayPalForm extends Nette\Application\UI\Control {
 
     public function handleProcess() {
 
-        echo 'process';
-        exit;
+        $data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
+
+        $component = $this->getComponent('paypalForm');
+        if ($this->paypal->isError()) {
+
+            foreach ($this->paypal->errors as $error)
+               $component->addError($error); 
+
+            return;
+        }
+
+        // Callback
+        $this->onSuccess($data);
     }
 
 
     public function handleCancel() {
 
-        echo 'canceled';
-        exit;
+        /** @todo
+         */
+
+        $this->onError();
     }
 
 
@@ -138,4 +151,12 @@ class PayPalForm extends Nette\Application\UI\Control {
         //$this->paypal->proxyPort = $this->credentials->proxyPort;
     }
 
+
+    private function buildUrl($signal) {
+
+        $url = $this->presenter->link($this->name . ":${signal}!");
+
+        // Some better way to do it in Nette?
+        return (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST']. $url;
+    }
 };
