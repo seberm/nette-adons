@@ -12,14 +12,13 @@ final class PayPalPresenter extends BasePresenter {
 
         $credentials = $this->context->params['paypal']['api'];
         $button->setCredentials($credentials)
-               ->setSandBox(); // enables paypal sandbox mode (http://developer.paypal.com)
+               ->setSandBox() // enables paypal sandbox mode (http://developer.paypal.com)
                //->setPaymentMethod(API::CHECKOUT);
-               //->setPrice(123)
-               //->setCurrency('CZK')
-               //->setPaymentType('Order');
+               ->setAmount(123);
 
         // If order success, call processOrder function
         $button->onSuccess[] = callback($this, 'processOrder');
+        $button->onCancel[] = callback($this, 'cancelOrder');
 
         return $button;
     }
@@ -82,4 +81,9 @@ Nette\ArrayHash(44) {
    PAYMENTREQUESTINFO_0_ERRORCODE => "0"
 */
 
+    public function cancelOrder($data) {
+
+        dump($data);
+        exit;
+    }
 }

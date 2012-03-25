@@ -14,19 +14,16 @@ class API extends \Nette\Object {
     const END_POINT = 'https://api-3t.paypal.com/nvp';
     const PAYPAL_URL = 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=';
 
+    private $data = array(
+                          'proxyHost' => '127.0.0.1',
+                          'proxyPort' => '808',
+                         );
 
     private $sandbox = false;
     private $useProxy = false;
-    
-    private $proxyHost = '127.0.0.1';
-    private $proxyPort = '808';
-
-    private $username = '';
-    private $password = '';
-    private $signature = '';
 
     private $sbnCode = 'PP-ECWizard';
-private $token;
+    private $token;
 
     private $endPoint;
     private $paypalURL;
@@ -38,11 +35,11 @@ private $token;
     
     public function __construct($opts = array()) {
 
-        $this->setPaypalCommunication($opts);
+        $this->setPaypalCommunication();
     }
 
 
-    private function setPaypalCommunication() {
+    public function setPaypalCommunication() {
 
         if ($this->sandbox) {
 
@@ -81,7 +78,7 @@ private $token;
 
         $status = strtoupper($this->value('ACK', $resArray));
 
-        if ($status === 'SUCCESS' || $status === 'SUCCESSWITHWARNING') {
+        if (strcasecmp($status, 'success') === 0 || strcasecmp($status, 'successwithwarning') === 0) {
 
             $ses->token = $this->value('TOKEN', $resArray);
             $this->token = $ses->token;
@@ -103,7 +100,7 @@ private $token;
         $resArray = $this->call('GetExpressCheckoutDetails', $query);
         $status = strtoupper($this->value('ACK', $resArray));
 
-        if($status != 'SUCCESS' && $status != 'SUCCESSWITHWARNING') {
+        if(strcasecmp($status, 'success') != 0 && strcasecmp($status, 'successwithwarning') != 0) {
 
             $this->err($this->value('L_LONGMESSAGE0', $resArray));
             return false;
@@ -112,111 +109,6 @@ private $token;
         return $resArray;
     }
     
-
-
-    /**
-     * Prepares the parameters for the SetExpressCheckout API Call.
-     */
-    /*
-    public function prepareExpressCheckout($paymentAmount, $currencyCodeType, $paymentType, $returnURL, 
-                                      $cancelURL, $shipToName, $shipToStreet, $shipToCity, $shipToState,
-                                      $shipToCountryCode, $shipToZip, $shipToStreet2, $phoneNum) {
-
-        // Construct the parameter string that describes the SetExpressCheckout API call in the shortcut implementation
-        $nvpstr='&PAYMENTREQUEST_0_AMT='. $paymentAmount;
-        $nvpstr = $nvpstr . '&PAYMENTREQUEST_0_PAYMENTACTION=' . $paymentType;
-        $nvpstr = $nvpstr . '&RETURNURL=' . $returnURL;
-        $nvpstr = $nvpstr . '&CANCELURL=' . $cancelURL;
-        $nvpstr = $nvpstr . '&PAYMENTREQUEST_0_CURRENCYCODE=' . $currencyCodeType;
-        $nvpstr = $nvpstr . '&ADDROVERRIDE=1';
-        $nvpstr = $nvpstr . '&PAYMENTREQUEST_0_SHIPTONAME=' . $shipToName;
-        $nvpstr = $nvpstr . '&PAYMENTREQUEST_0_SHIPTOSTREET=' . $shipToStreet;
-        $nvpstr = $nvpstr . '&PAYMENTREQUEST_0_SHIPTOSTREET2=' . $shipToStreet2;
-        $nvpstr = $nvpstr . '&PAYMENTREQUEST_0_SHIPTOCITY=' . $shipToCity;
-        $nvpstr = $nvpstr . '&PAYMENTREQUEST_0_SHIPTOSTATE=' . $shipToState;
-        $nvpstr = $nvpstr . '&PAYMENTREQUEST_0_SHIPTOCOUNTRYCODE=' . $shipToCountryCode;
-        $nvpstr = $nvpstr . '&PAYMENTREQUEST_0_SHIPTOZIP=' . $shipToZip;
-        $nvpstr = $nvpstr . '&PAYMENTREQUEST_0_SHIPTOPHONENUM=' . $phoneNum;
-        
-        $_SESSION['currencyCodeType'] = $currencyCodeType;      
-        $_SESSION['PaymentType'] = $paymentType;
-
-        $resArray = $this->call('SetExpressCheckout', $nvpstr);
-        $ack = strtoupper($resArray['ACK']);
-
-        if($ack == 'SUCCESS' || $ack == 'SUCCESSWITHWARNING') {
-
-            $token = urldecode($resArray['TOKEN']);
-            $_SESSION['TOKEN'] = $token;
-        }
-           
-        return $resArray;
-    }
-     */
-    
-
-    /**
-     * Prepares the parameters for the GetExpressCheckoutDetails API Call.
-     */
-    /*
-    public function confirmPayment($FinalPaymentAmt) {
-
-        // Format the other parameters that were stored in the session from the previous calls    
-        $token                 = urlencode($_SESSION['TOKEN']);
-        $paymentType         = urlencode($_SESSION['PaymentType']);
-        $currencyCodeType     = urlencode($_SESSION['currencyCodeType']);
-        $payerID             = urlencode($_SESSION['payer_id']);
-
-        $serverName         = urlencode($_SERVER['SERVER_NAME']);
-
-        $nvpstr  = '&TOKEN=' . $token . '&PAYERID=' . $payerID . '&PAYMENTREQUEST_0_PAYMENTACTION=' . $paymentType . '&PAYMENTREQUEST_0_AMT=' . $FinalPaymentAmt;
-        $nvpstr .= '&PAYMENTREQUEST_0_CURRENCYCODE=' . $currencyCodeType . '&IPADDRESS=' . $serverName; 
-
-     */
-         /* Make the call to PayPal to finalize payment
-            If an error occured, show the resulting errors
-            */
-    //    $resArray = $this->call('DoExpressCheckoutPayment', $nvpstr);
-
-        /* Display the API response back to the browser.
-           If the response from PayPal was a success, display the response parameters'
-           If the response was an error, display the errors received using APIError.php.
-           */
-    //    $ack = strtoupper($resArray['ACK']);
-
-    //    return $resArray;
-    //}
-    
-    /**
-     * This function makes a DoDirectPayment API call.
-     */
-//!todo pouzit pro registrovaneho uzivatele!
-/*
-    public function directPayment($paymentType, $paymentAmount, $creditCardType, $creditCardNumber,
-                            $expDate, $cvv2, $firstName, $lastName, $street, $city, $state, $zip, 
-                            $countryCode, $currencyCode) {
-
-        //Construct the parameter string that describes DoDirectPayment
-        $nvpstr = '&AMT=' . $paymentAmount;
-        $nvpstr = $nvpstr . '&CURRENCYCODE=' . $currencyCode;
-        $nvpstr = $nvpstr . '&PAYMENTACTION=' . $paymentType;
-        $nvpstr = $nvpstr . '&CREDITCARDTYPE=' . $creditCardType;
-        $nvpstr = $nvpstr . '&ACCT=' . $creditCardNumber;
-        $nvpstr = $nvpstr . '&EXPDATE=' . $expDate;
-        $nvpstr = $nvpstr . '&CVV2=' . $cvv2;
-        $nvpstr = $nvpstr . '&FIRSTNAME=' . $firstName;
-        $nvpstr = $nvpstr . '&LASTNAME=' . $lastName;
-        $nvpstr = $nvpstr . '&STREET=' . $street;
-        $nvpstr = $nvpstr . '&CITY=' . $city;
-        $nvpstr = $nvpstr . '&STATE=' . $state;
-        $nvpstr = $nvpstr . '&COUNTRYCODE=' . $countryCode;
-        $nvpstr = $nvpstr . '&IPADDRESS=' . $_SERVER['REMOTE_ADDR'];
-
-        $resArray = $this->call('DoDirectPayment', $nvpstr);
-
-        return $resArray;
-    }
-*/
 
 
     private function call($method, $data) {
@@ -241,15 +133,7 @@ private $token;
             curl_setopt($ch, CURLOPT_PROXY, $this->proxyHost. ':' . $this->proxyPort); 
 
         // NVP Request
-        $controlData = array('METHOD' => $method,
-                             'VERSION' => self::VERSION,
-                             'PWD' => $this->password,
-                             'USER' => $this->username,
-                             'SIGNATURE' => $this->signature,
-                             'BUTTONSOURCE' => $this->sbnCode,
-                            );
-        
-        $resData = array_merge($data, $controlData);
+        $resData = array_merge($data, array('METHOD' => $method));
         $request = $this->buildQuery($resData);
 
         // POST data
@@ -267,13 +151,13 @@ private $token;
     }
 
 
-    public function getURL() {
+    public function getUrl() {
 
         return $this->paypalURL . $this->token;
     }
 
     
-    private function deformatQuery($query) {
+    public function deformatQuery($query) {
 
         parse_str($query, $data);
         return $data;
@@ -282,18 +166,22 @@ private $token;
 
     public function buildQuery(array $data) {
 
+        $controlData = array(
+                             'VERSION' => self::VERSION,
+                             'PWD' => $this->password,
+                             'USER' => $this->username,
+                             'SIGNATURE' => $this->signature,
+                             'BUTTONSOURCE' => $this->sbnCode,
+                            );
+
+        $resData = array_merge($data, $controlData);
+
         //foreach ($data as $key => $value)
             //$data[$key] = urlencode($value);
 
-        return http_build_query($data, '', '&');
+        return http_build_query($resData, '', '&');
     }
 
-
-    public function setSignature($signature) {
-
-        $this->signature = $signature;
-        return $this;
-    }
 
 
     public function isError() {
@@ -308,47 +196,66 @@ private $token;
     }
 
 
+    public function setSignature($signature) {
+
+        $this->data['signature'] = $signature;
+        return $this;
+    }
+
+
+    public function getSignature() {
+
+        return isset($this->data['signature']) ? $this->data['signature'] : NULL;
+    }
+
+
     public function setPassword($password) {
 
-        $this->password = $password;
+        $this->data['password'] = $password;
         return $this;
+    }
+
+
+    public function getPassword() {
+
+        return isset($this->data['password']) ? $this->data['password'] : NULL;
     }
 
 
     public function getUsername() {
 
-        return $this->username;
+        return isset($this->data['username']) ? $this->data['username'] : NULL;
     }
 
 
     public function setUsername($username) {
 
-        $this->username = $username;
+        $this->data['username'] = $username;
         return $this;
     }
 
 
-    public function getPort() {
+    public function getProxyPort() {
 
-        return $this->port;
+        return isset($this->data['proxyPort']) ? $this->data['proxyPort'] : NULL;
     }
 
 
-    public function setPort(int $port) {
+    public function setPort(int $proxyPort) {
 
-        $this->port = $port;
+        $this->data['proxyPort'] = $proxyPort;
         return $this;
     }
 
-    public function getHost() {
+    public function getProxyHost() {
 
-        return $this->host;
+        return isset($this->data['proxyHost']) ? $this->data['proxyHost'] : NULL;
     }
 
 
-    public function setHost($host) {
+    public function setHost($proxyHost) {
 
-        $this->host = $host;
+        $this->data['proxyHost'] = $proxyHost;
         return $this;
     }
 
@@ -374,5 +281,4 @@ private $token;
     }
 
 
-public function getToken() {return $this->token;}
-}
+};
