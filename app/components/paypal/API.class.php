@@ -5,14 +5,17 @@ namespace PayPal;
 
 class API extends \Nette\Object {
 
+    /**
+     * Tells which version of PayPay API we want use
+     */
     const VERSION = '66';
 
-    // SANDBOX
+    // SandBox
     const SANDBOX_END_POINT = 'https://api-3t.sandbox.paypal.com/nvp';
-    const SANDBOX_PAYPAL_URL = 'https://www.sandbox.paypal.com/webscr?cmd=_express-checkout&token=';
+    const SANDBOX_PAYPAL_URL = 'https://www.sandbox.paypal.com/webscr';
 
     const END_POINT = 'https://api-3t.paypal.com/nvp';
-    const PAYPAL_URL = 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=';
+    const PAYPAL_URL = 'https://www.paypal.com/cgi-bin/webscr';
 
     private $data = array(
                           'proxyHost' => '127.0.0.1',
@@ -25,9 +28,6 @@ class API extends \Nette\Object {
     private $sbnCode = 'PP-ECWizard';
     private $token;
 
-    private $endPoint;
-    private $paypalURL;
-
     private $error = false;
 
     private $errors = array();
@@ -35,31 +35,15 @@ class API extends \Nette\Object {
     
     public function __construct($opts = array()) {
 
-        $this->setPaypalCommunication();
+        /**@todo*/
     }
-
-
-    public function setPaypalCommunication() {
-
-        if ($this->sandbox) {
-
-            $this->endPoint = self::SANDBOX_END_POINT;
-            $this->paypalURL = self::SANDBOX_PAYPAL_URL;
-        } else {
-
-            $this->endPoint = self::END_POINT;
-            $this->paypalURL = self::PAYPAL_URL;
-        }
-
-        /* An express checkout transaction starts with a token, that
-           identifies to PayPal your transaction
-           In this example, when the script sees a token, the script
-           knows that the buyer has already authorized payment through
-           paypal.  If no token was found, the action is to send the buyer
-           to PayPal to first authorize payment
-       */
-    }
-
+    /* An express checkout transaction starts with a token, that
+       identifies to PayPal your transaction
+       In this example, when the script sees a token, the script
+       knows that the buyer has already authorized payment through
+       paypal.  If no token was found, the action is to send the buyer
+       to PayPal to first authorize payment
+   */
 
     /**
      * Prepares the parameters for the SetExpressCheckout API Call.
@@ -110,6 +94,11 @@ class API extends \Nette\Object {
     }
     
 
+    public function getEndPoint() {
+
+        return $this->sandbox ? self::SANDBOX_END_POINT : self::END_POINT;
+    }
+
 
     private function call($method, $data) {
 
@@ -153,7 +142,9 @@ class API extends \Nette\Object {
 
     public function getUrl() {
 
-        return $this->paypalURL . $this->token;
+        $url = $this->sandbox ? self::SANDBOX_PAYPAL_URL : self::PAYPAL_URL;
+
+        return $url . '?cmd=_express-checkout&token=' . $this->token;
     }
 
     
@@ -164,6 +155,12 @@ class API extends \Nette\Object {
     }
 
 
+    /**
+     * Builds basic query to paypal.
+     *
+     * @var array $data
+     * @return string query
+     */
     public function buildQuery(array $data) {
 
         $controlData = array(
@@ -183,7 +180,11 @@ class API extends \Nette\Object {
     }
 
 
-
+    /**
+     * If some error, true is returned.
+     *
+     * @return bool
+     */
     public function isError() {
 
         return (bool) count($this->errors);
@@ -263,8 +264,6 @@ class API extends \Nette\Object {
     public function setSandBox($opt = true) {
 
         $this->sandbox = $opt;
-        $this->setPaypalCommunication();
-
         return $this;
     }
 
