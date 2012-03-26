@@ -6,7 +6,9 @@
 
 namespace PayPal;
 
-use \Nette\Utils\Arrays;
+use \Nette\Utils\Arrays,
+    \Nette\Http\Url;
+
 
 class API extends \Nette\Object {
 
@@ -54,7 +56,7 @@ class API extends \Nette\Object {
      * 
      * @var string|array $opts
      * @var mixed $val
-     * @return PayPal\API (support fluent interface)
+     * @return PayPal\API (supports fluent interface)
      */
     public function setData($opts = array(), $val = NULL) {
 
@@ -168,7 +170,7 @@ class API extends \Nette\Object {
      */
     public function getUrl() {
 
-        $url = new \Nette\Http\Url($this->sandbox ? self::SANDBOX_PAYPAL_URL : self::PAYPAL_URL);
+        $url = new Url($this->sandbox ? self::SANDBOX_PAYPAL_URL : self::PAYPAL_URL);
 
         $query = array(
                        'cmd' => '_express-checkout',

@@ -1,6 +1,6 @@
 <?php
 /**
- * @class PayPalButton (Nette 2.0 Component)
+ * @class PayPal\PayPalButton (Nette 2.0 Component)
  * @author Otto Sabart <seberm[at]gmail[dot]com> (www.seberm.com)
  */
 
@@ -30,19 +30,9 @@ class PayPalButton extends Nette\Application\UI\Control {
      */
     private $translator = NULL;
 
-    /**
-     * @var Nette\Http\Session
-     */
-    private $session;
-
-    /**
-     * @var Nette\ArrayHash
-     */
-    private $credentials;
-
     public $onSuccess;
     public $onCancel;
-    //public $onError;
+    public $onError;
 
 
     public function __construct(Nette\ComponentModel\IContainer $parent = NULL, $name = NULL) {
@@ -74,7 +64,7 @@ class PayPalButton extends Nette\Application\UI\Control {
 
     public function setCredentials(array $params) {
 
-        $this->credentials = $params;
+        $this->paypal->setData($params);
 
         return $this;
     }
@@ -104,10 +94,18 @@ class PayPalButton extends Nette\Application\UI\Control {
 
     public function initPayment(Form $paypalForm) {
 
-        $returnUrl = $this->buildUrl('process');
-        $cancelUrl = $this->buildUrl('cancel');
+        $this->paypal->doExpressCheckout($this->amount,
+                                         $this->currencyCode,
+                                         $this->paymentType,
+                                         $this->buildUrl('process'),
+                                         $this->buildUrl('cancel'),
+                                         $this->presenter->session->getSection('paypal'));
 
-        $res = $this->paypal->doExpressCheckout($this->amount, $this->currencyCode, $this->paymentType, $returnUrl, $cancelUrl, $this->presenter->session->getSection('paypal'));
+        if ($this->paypal->isError()) {
+
+            $this->onError($this->paypal->errors);
+            return;
+        }
 
         $this->redirectToPaypal();
     }
@@ -144,6 +142,7 @@ class PayPalButton extends Nette\Application\UI\Control {
             return;
         }
 
+        // Callback
         $this->onCancel($data);
     }
 
@@ -159,7 +158,6 @@ class PayPalButton extends Nette\Application\UI\Control {
 
         parent::loadState($params);
 
-        $this->paypal->setData($this->credentials);
     }
 
 

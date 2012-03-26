@@ -19,8 +19,16 @@ final class PayPalPresenter extends BasePresenter {
         // If order success, call processOrder function
         $button->onSuccess[] = callback($this, 'processOrder');
         $button->onCancel[] = callback($this, 'cancelOrder');
+        $button->onError[] = callback($this, 'errorOccurred');
 
         return $button;
+    }
+
+
+    public function errorOccurred($errors) {
+
+        dump($errors);
+        exit(1);
     }
 
 
