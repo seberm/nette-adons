@@ -10,22 +10,26 @@ class API extends \Nette\Object {
      */
     const VERSION = '66';
 
-    // SandBox
+    // PayPal SandBox URLs
     const SANDBOX_END_POINT = 'https://api-3t.sandbox.paypal.com/nvp';
     const SANDBOX_PAYPAL_URL = 'https://www.sandbox.paypal.com/webscr';
 
+    // Direct PayPal URLs
     const END_POINT = 'https://api-3t.paypal.com/nvp';
     const PAYPAL_URL = 'https://www.paypal.com/cgi-bin/webscr';
 
+    // Options
     private $data = array(
                           'proxyHost' => '127.0.0.1',
                           'proxyPort' => '808',
+                          'username'  => '',
+                          'password'  => '',
+                          'signature' => '',
                          );
 
     private $sandbox = false;
     private $useProxy = false;
 
-    private $sbnCode = 'PP-ECWizard';
     private $token;
 
     private $error = false;
@@ -37,13 +41,6 @@ class API extends \Nette\Object {
 
         /**@todo*/
     }
-    /* An express checkout transaction starts with a token, that
-       identifies to PayPal your transaction
-       In this example, when the script sees a token, the script
-       knows that the buyer has already authorized payment through
-       paypal.  If no token was found, the action is to send the buyer
-       to PayPal to first authorize payment
-   */
 
     /**
      * Prepares the parameters for the SetExpressCheckout API Call.
@@ -136,22 +133,33 @@ class API extends \Nette\Object {
 
         curl_close($ch);
 
-        return \Nette\ArrayHash::from($this->deformatQuery($response));
+        return $this->deformatQuery($response);
     }
 
 
+    /**
+     * Generates URL to PayPal for redirection.
+     * @return Nette\Http\Url
+     */
     public function getUrl() {
 
-        $url = $this->sandbox ? self::SANDBOX_PAYPAL_URL : self::PAYPAL_URL;
+        $url = new \Nette\Http\Url($this->sandbox ? self::SANDBOX_PAYPAL_URL : self::PAYPAL_URL);
 
-        return $url . '?cmd=_express-checkout&token=' . $this->token;
+        $query = array(
+                       'cmd' => '_express-checkout',
+                       'token' => $this->token,
+                      );
+
+        $url->setQuery($query);
+
+        return $url;
     }
 
     
     public function deformatQuery($query) {
 
         parse_str($query, $data);
-        return $data;
+        return \Nette\ArrayHash::from($data);
     }
 
 
@@ -168,7 +176,6 @@ class API extends \Nette\Object {
                              'PWD' => $this->password,
                              'USER' => $this->username,
                              'SIGNATURE' => $this->signature,
-                             'BUTTONSOURCE' => $this->sbnCode,
                             );
 
         $resData = array_merge($data, $controlData);
