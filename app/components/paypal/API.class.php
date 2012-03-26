@@ -1,7 +1,12 @@
 <?php
+/**
+ * @class PayPal\API
+ * @author Otto Sabart <seberm[at]gmail[dot]com> (www.seberm.com)
+ */
 
 namespace PayPal;
 
+use \Nette\Utils\Arrays;
 
 class API extends \Nette\Object {
 
@@ -39,8 +44,28 @@ class API extends \Nette\Object {
     
     public function __construct($opts = array()) {
 
-        /**@todo*/
+        if (count($opts))
+            $this->setData($opts);
     }
+
+
+    /**
+     * Sets object data
+     * 
+     * @var string|array $opts
+     * @var mixed $val
+     * @return PayPal\API (support fluent interface)
+     */
+    public function setData($opts = array(), $val = NULL) {
+
+        if (is_string($opts))
+            $this->data[$opts] = $val;
+        elseif (is_array($opts))
+            $this->data = array_merge($this->data, $opts);
+        
+        return $this;
+    }
+
 
     /**
      * Prepares the parameters for the SetExpressCheckout API Call.
@@ -206,7 +231,7 @@ class API extends \Nette\Object {
 
     public function setSignature($signature) {
 
-        $this->data['signature'] = $signature;
+        $this->data['signature'] = (string) $signature;
         return $this;
     }
 
@@ -219,26 +244,26 @@ class API extends \Nette\Object {
 
     public function setPassword($password) {
 
-        $this->data['password'] = $password;
+        $this->data['password'] = (string) $password;
         return $this;
     }
 
 
     public function getPassword() {
 
-        return isset($this->data['password']) ? $this->data['password'] : NULL;
+        return isset($this->data['password']) ? $this->data['password'] : '';
     }
 
 
     public function getUsername() {
 
-        return isset($this->data['username']) ? $this->data['username'] : NULL;
+        return isset($this->data['username']) ? $this->data['username'] : '';
     }
 
 
     public function setUsername($username) {
 
-        $this->data['username'] = $username;
+        $this->data['username'] = (string) $username;
         return $this;
     }
 
@@ -249,28 +274,28 @@ class API extends \Nette\Object {
     }
 
 
-    public function setPort(int $proxyPort) {
+    public function setPort($proxyPort) {
 
-        $this->data['proxyPort'] = $proxyPort;
+        $this->data['proxyPort'] = (int) $proxyPort;
         return $this;
     }
 
     public function getProxyHost() {
 
-        return isset($this->data['proxyHost']) ? $this->data['proxyHost'] : NULL;
+        return isset($this->data['proxyHost']) ? $this->data['proxyHost'] : '';
     }
 
 
     public function setHost($proxyHost) {
 
-        $this->data['proxyHost'] = $proxyHost;
+        $this->data['proxyHost'] = (string) $proxyHost;
         return $this;
     }
 
 
     public function setSandBox($opt = true) {
 
-        $this->sandbox = $opt;
+        $this->sandbox = (bool) $opt;
         return $this;
     }
 

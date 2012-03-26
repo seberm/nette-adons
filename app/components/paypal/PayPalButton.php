@@ -1,4 +1,8 @@
 <?php
+/**
+ * @class PayPalButton (Nette 2.0 Component)
+ * @author Otto Sabart <seberm[at]gmail[dot]com> (www.seberm.com)
+ */
 
 namespace PayPal;
 
@@ -70,7 +74,7 @@ class PayPalButton extends Nette\Application\UI\Control {
 
     public function setCredentials(array $params) {
 
-        $this->credentials = Nette\ArrayHash::from($params);
+        $this->credentials = $params;
 
         return $this;
     }
@@ -155,12 +159,7 @@ class PayPalButton extends Nette\Application\UI\Control {
 
         parent::loadState($params);
 
-        $this->paypal->username = $this->credentials->username;
-        $this->paypal->password = $this->credentials->password;
-        $this->paypal->signature = $this->credentials->signature;
-
-        //$this->paypal->proxyHost = $this->credentials->proxyHost;
-        //$this->paypal->proxyPort = $this->credentials->proxyPort;
+        $this->paypal->setData($this->credentials);
     }
 
 
@@ -171,7 +170,6 @@ class PayPalButton extends Nette\Application\UI\Control {
         // Some better way to do it in Nette?
         return (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST']. $url;
     }
-
 
 
     public function setAmount($amount) {
