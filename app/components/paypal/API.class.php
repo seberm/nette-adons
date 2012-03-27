@@ -69,6 +69,18 @@ class API extends \Nette\Object {
     }
 
 
+    public function getData($key = NULL) {
+
+        if (is_string($key))
+
+            if (array_key_exists($key, $this->data))
+                return $this->data[$key];
+            else return NULL;
+
+        return $this->data;
+    }
+
+
     /**
      * Prepares the parameters for the SetExpressCheckout API Call.
      */
@@ -239,7 +251,7 @@ class API extends \Nette\Object {
 
     public function getSignature() {
 
-        return isset($this->data['signature']) ? $this->data['signature'] : NULL;
+        return $this->getData('signature');
     }
 
 
@@ -251,13 +263,13 @@ class API extends \Nette\Object {
 
     public function getPassword() {
 
-        return isset($this->data['password']) ? $this->data['password'] : '';
+        return $this->getData('password');
     }
 
 
     public function getUsername() {
 
-        return isset($this->data['username']) ? $this->data['username'] : '';
+        return $this->getData('username');
     }
 
 
@@ -269,7 +281,7 @@ class API extends \Nette\Object {
 
     public function getProxyPort() {
 
-        return isset($this->data['proxyPort']) ? $this->data['proxyPort'] : NULL;
+        return $this->getData('proxyPort');
     }
 
 
@@ -281,7 +293,7 @@ class API extends \Nette\Object {
 
     public function getProxyHost() {
 
-        return isset($this->data['proxyHost']) ? $this->data['proxyHost'] : '';
+        return $this->getData('proxyHost');
     }
 
 
