@@ -233,8 +233,7 @@ class API extends \Nette\Object {
 
     public function setSignature($signature) {
 
-        $this->data['signature'] = (string) $signature;
-        return $this;
+        return $this->setData('signature', (string) $signature);
     }
 
 
@@ -246,8 +245,7 @@ class API extends \Nette\Object {
 
     public function setPassword($password) {
 
-        $this->data['password'] = (string) $password;
-        return $this;
+        return $this->setData('password', (string) $password);
     }
 
 
@@ -265,8 +263,7 @@ class API extends \Nette\Object {
 
     public function setUsername($username) {
 
-        $this->data['username'] = (string) $username;
-        return $this;
+        return $this->setData('username', (string) $username);
     }
 
 
@@ -290,8 +287,7 @@ class API extends \Nette\Object {
 
     public function setHost($proxyHost) {
 
-        $this->data['proxyHost'] = (string) $proxyHost;
-        return $this;
+        return $this->setData('proxyHost', (string) $proxyHost);
     }
 
 
