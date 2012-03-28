@@ -21,4 +21,4 @@ PHP curl extension enabled
 If you find something you think that is a bug, feel free to contact me.
 
 ### 4) Contributing
-You can feel free to contribute to sAlarm (patch or pull request).
+You can feel free to contribute to this project (patch or pull request).
