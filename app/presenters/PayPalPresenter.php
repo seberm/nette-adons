@@ -8,13 +8,9 @@ final class PayPalPresenter extends BasePresenter {
 
     public function createComponentPaypalButton() {
 
-        $button = new PayPalButton;
+        $button = $this->context->createPayPalButton();
 
-        $credentials = $this->context->params['paypal']['api'];
-        $button->setCredentials($credentials)
-               ->setSandBox() // enables paypal sandbox mode (http://developer.paypal.com)
-               //->setPaymentMethod(API::CHECKOUT);
-               ->setAmount(123);
+        //$button->setPaymentMethod(API::CHECKOUT);
 
         // If order success, call processOrder function
         $button->onSuccess[] = callback($this, 'processOrder');

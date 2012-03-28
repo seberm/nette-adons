@@ -12,6 +12,8 @@ common:
                 password = '1332081363'
                 signature = 'AWiH1IO0zFZrEQbbn0JwDZHbWukIAebmYjpOylRCqBGGgztea2bku.N4'
 
+            sandbox = true
+
     php:
         date.timezone: Europe/Prague
         session.save_path: "%tempDir%/sessions"
@@ -25,6 +27,12 @@ common:
 
 
     factories:
+        payPalButton:
+            class: \PayPal\PayPalButton
+            setup:
+                    - setCredentials(%paypal.api%)
+                    - setSandBox(%paypal.sandbox%)
+                    - setAmount(123)
 
 
 production < common:
