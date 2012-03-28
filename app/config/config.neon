@@ -12,7 +12,11 @@ common:
                 password = '1332081363'
                 signature = 'AWiH1IO0zFZrEQbbn0JwDZHbWukIAebmYjpOylRCqBGGgztea2bku.N4'
 
+            # Are we using paypal sandbox?
             sandbox = true
+
+            # Express checkout amount
+            amount = 123
 
     php:
         date.timezone: Europe/Prague
@@ -31,8 +35,8 @@ common:
             class: \PayPal\PayPalButton
             setup:
                     - setCredentials(%paypal.api%)
+                    - setAmount(%paypal.amount%)
                     - setSandBox(%paypal.sandbox%)
-                    - setAmount(123)
 
 
 production < common:

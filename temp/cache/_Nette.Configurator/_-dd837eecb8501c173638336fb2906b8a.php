@@ -1,4 +1,4 @@
-<?php //netteCache[01]000544a:2:{s:4:"time";s:21:"0.49294100 1332963568";s:9:"callbacks";a:3:{i:0;a:3:{i:0;a:2:{i:0;s:19:"Nette\Caching\Cache";i:1;s:9:"checkFile";}i:1;s:53:"/srv/http/Projects/nette-adons/app/config/config.neon";i:2;i:1332963561;}i:1;a:3:{i:0;a:2:{i:0;s:19:"Nette\Caching\Cache";i:1;s:9:"checkFile";}i:1;s:52:"/srv/http/Projects/nette-adons/libs/Nette/loader.php";i:2;i:1330524146;}i:2;a:3:{i:0;a:2:{i:0;s:19:"Nette\Caching\Cache";i:1;s:9:"checkFile";}i:1;s:69:"/srv/http/Projects/nette-adons/app/components/paypal/PayPalButton.php";i:2;i:1332849720;}}}?><?php
+<?php //netteCache[01]000544a:2:{s:4:"time";s:21:"0.57705800 1332964443";s:9:"callbacks";a:3:{i:0;a:3:{i:0;a:2:{i:0;s:19:"Nette\Caching\Cache";i:1;s:9:"checkFile";}i:1;s:53:"/srv/http/Projects/nette-adons/app/config/config.neon";i:2;i:1332963949;}i:1;a:3:{i:0;a:2:{i:0;s:19:"Nette\Caching\Cache";i:1;s:9:"checkFile";}i:1;s:52:"/srv/http/Projects/nette-adons/libs/Nette/loader.php";i:2;i:1330524146;}i:2;a:3:{i:0;a:2:{i:0;s:19:"Nette\Caching\Cache";i:1;s:9:"checkFile";}i:1;s:69:"/srv/http/Projects/nette-adons/app/components/paypal/PayPalButton.php";i:2;i:1332849720;}}}?><?php
 // source: /srv/http/Projects/nette-adons/app/config/config.neon development
 
 /**
@@ -76,6 +76,7 @@ class SystemContainer extends Nette\DI\Container
 					'signature' => 'AWiH1IO0zFZrEQbbn0JwDZHbWukIAebmYjpOylRCqBGGgztea2bku.N4',
 				),
 				'sandbox' => TRUE,
+				'amount' => 123,
 			),
 		));
 	}
@@ -355,8 +356,8 @@ class SystemContainer extends Nette\DI\Container
 			'password' => '1332081363',
 			'signature' => 'AWiH1IO0zFZrEQbbn0JwDZHbWukIAebmYjpOylRCqBGGgztea2bku.N4',
 		));
-		$service->setSandBox(TRUE);
 		$service->setAmount(123);
+		$service->setSandBox(TRUE);
 		return $service;
 	}
 
