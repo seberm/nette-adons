@@ -94,11 +94,13 @@ class API extends \Nette\Object
 	 */
 	public function doExpressCheckout($paymentAmount, $currencyCodeType, $paymentType, $returnURL, $cancelURL, $ses)
 	{
-		$query = array('PAYMENTREQUEST_0_AMT' => $paymentAmount,
+		$query = array(
+			'PAYMENTREQUEST_0_AMT' => $paymentAmount,
 			'PAYMENTREQUEST_0_PAYMENTACTION' => $paymentType,
 			'RETURNURL' => $returnURL,
 			'CANCELURL' => $cancelURL,
 			'PAYMENTREQUEST_0_CURRENCYCODE' => $currencyCodeType,
+			'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly'
 		);
 
 		$resArray = $this->call('SetExpressCheckout', $query);

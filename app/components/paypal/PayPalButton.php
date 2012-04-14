@@ -20,7 +20,8 @@ class PayPalButton extends Nette\Application\UI\Control
 	public $payImage = 'https://www.paypalobjects.com/en_US/i/btn/x-click-but3.gif';
 	public $currencyCode = 'CZK';
 
-	public $paymentType = 'Order';
+
+	public $paymentType = 'Sale'; // keep Sale for instant payment
 
 	public $amount;
 
