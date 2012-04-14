@@ -15,11 +15,11 @@ class PayPalButton extends Nette\Application\UI\Control
 	/**
 	 * PayPal's image source
 	 */
-	const PAYPAL_IMAGE = 'https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif';
+	const PAYPAL_IMAGE = 'https://www.paypalobjects.com/en_US/i/btn/btn_xpressCheckout.gif';
 
 	public $payImage = 'https://www.paypalobjects.com/en_US/i/btn/x-click-but3.gif';
-	public $currencyCode = 'CZK';
 
+	public $currencyCode = 'EUR';
 
 	public $paymentType = 'Sale'; // keep Sale for instant payment
 
