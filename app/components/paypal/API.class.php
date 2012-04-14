@@ -43,8 +43,6 @@ class API extends \Nette\Object
 
 	private $token;
 
-	private $error = FALSE;
-
 	private $errors = array();
 
 

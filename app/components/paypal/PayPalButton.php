@@ -120,7 +120,7 @@ class PayPalButton extends Nette\Application\UI\Control
 		$data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
 
 		$component = $this->getComponent('paypalForm');
-		if ($this->paypal->error) {
+		if ($this->paypal->isError()) {
 			foreach ($this->paypal->errors as $error) {
 				$component->addError($error);
 			}
@@ -137,7 +137,7 @@ class PayPalButton extends Nette\Application\UI\Control
 		$data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
 
 		$component = $this->getComponent('paypalForm');
-		if ($this->paypal->error) {
+		if ($this->paypal->isError()) {
 			foreach ($this->paypal->errors as $error) {
 				$component->addError($error);
 			}
