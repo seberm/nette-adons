@@ -6,320 +6,324 @@
 
 namespace PayPal;
 
-use \Nette\Utils\Arrays,
-    \Nette\Http\Url;
+use Nette\Utils\Arrays,
+Nette\Http\Url;
 
 
-class API extends \Nette\Object {
+class API extends \Nette\Object
+{
 
-    /**
-     * Tells which version of PayPay API we want use
-     */
-    const VERSION = '66';
+	/**
+	 * Tells which version of PayPay API we want use
+	 */
+	const VERSION = '66';
 
-    // PayPal SandBox URLs
-    const SANDBOX_END_POINT = 'https://api-3t.sandbox.paypal.com/nvp';
-    const SANDBOX_PAYPAL_URL = 'https://www.sandbox.paypal.com/webscr';
+	// PayPal SandBox URLs
+	const SANDBOX_END_POINT = 'https://api-3t.sandbox.paypal.com/nvp';
 
-    // Direct PayPal URLs
-    const END_POINT = 'https://api-3t.paypal.com/nvp';
-    const PAYPAL_URL = 'https://www.paypal.com/cgi-bin/webscr';
+	const SANDBOX_PAYPAL_URL = 'https://www.sandbox.paypal.com/webscr';
 
-    // Options
-    private $data = array(
-                          'proxyHost' => '127.0.0.1',
-                          'proxyPort' => '808',
-                          'username'  => '',
-                          'password'  => '',
-                          'signature' => '',
-                         );
+	// Direct PayPal URLs
+	const END_POINT = 'https://api-3t.paypal.com/nvp';
 
-    private $sandbox = false;
-    private $useProxy = false;
+	const PAYPAL_URL = 'https://www.paypal.com/cgi-bin/webscr';
 
-    private $token;
+	// Options
+	private $data = array(
+		'proxyHost' => '127.0.0.1',
+		'proxyPort' => '808',
+		'username' => '',
+		'password' => '',
+		'signature' => '',
+	);
 
-    private $error = false;
+	private $sandbox = FALSE;
 
-    private $errors = array();
+	private $useProxy = FALSE;
 
-    
-    public function __construct($opts = array()) {
+	private $token;
 
-        if (count($opts))
-            $this->setData($opts);
-    }
+	private $error = FALSE;
 
+	private $errors = array();
 
-    /**
-     * Sets object data
-     * 
-     * @var string|array $opts
-     * @var mixed $val
-     * @return PayPal\API (supports fluent interface)
-     */
-    public function setData($opts = array(), $val = NULL) {
 
-        if (is_string($opts))
-            $this->data[$opts] = $val;
-        elseif (is_array($opts))
-            $this->data = array_merge($this->data, $opts);
-        
-        return $this;
-    }
+	public function __construct($opts = array())
+	{
 
+		if (count($opts)) {
+			$this->setData($opts);
+		}
+	}
 
-    public function getData($key = NULL) {
 
-        if (is_string($key))
+	/**
+	 * Sets object data
+	 * @var string|array $opts
+	 * @var mixed $val
+	 * @return PayPal\API (supports fluent interface)
+	 */
+	public function setData($opts = array(), $val = NULL)
+	{
+		if (is_string($opts)) {
+			$this->data[$opts] = $val;
+		}
+		elseif (is_array($opts)) {
+			$this->data = array_merge($this->data, $opts);
+		}
 
-            if (array_key_exists($key, $this->data))
-                return $this->data[$key];
-            else return NULL;
+		return $this;
+	}
 
-        return $this->data;
-    }
 
+	public function getData($key = NULL)
+	{
+		if (is_string($key)) {
+			if (array_key_exists($key, $this->data)) {
+				return $this->data[$key];
+			}
+			else {
+				return NULL;
+			}
+		}
 
-    /**
-     * Prepares the parameters for the SetExpressCheckout API Call.
-     */
-    public function doExpressCheckout($paymentAmount, $currencyCodeType, $paymentType, $returnURL, $cancelURL, $ses) { 
+		return $this->data;
+	}
 
-        $query = array('PAYMENTREQUEST_0_AMT' => $paymentAmount,
-                       'PAYMENTREQUEST_0_PAYMENTACTION' => $paymentType,
-                       'RETURNURL' => $returnURL,
-                       'CANCELURL' => $cancelURL,
-                       'PAYMENTREQUEST_0_CURRENCYCODE' => $currencyCodeType,
-                     );
-        
 
-        $resArray = $this->call('SetExpressCheckout', $query);
+	/**
+	 * Prepares the parameters for the SetExpressCheckout API Call.
+	 */
+	public function doExpressCheckout($paymentAmount, $currencyCodeType, $paymentType, $returnURL, $cancelURL, $ses)
+	{
+		$query = array('PAYMENTREQUEST_0_AMT' => $paymentAmount,
+			'PAYMENTREQUEST_0_PAYMENTACTION' => $paymentType,
+			'RETURNURL' => $returnURL,
+			'CANCELURL' => $cancelURL,
+			'PAYMENTREQUEST_0_CURRENCYCODE' => $currencyCodeType,
+		);
 
-        $status = strtoupper($this->value('ACK', $resArray));
+		$resArray = $this->call('SetExpressCheckout', $query);
 
-        if (strcasecmp($status, 'success') === 0 || strcasecmp($status, 'successwithwarning') === 0) {
+		$status = strtoupper($this->value('ACK', $resArray));
 
-            $ses->token = $this->value('TOKEN', $resArray);
-            $this->token = $ses->token;
-            
-        } else {
+		if (strcasecmp($status, 'success') === 0 || strcasecmp($status, 'successwithwarning') === 0) {
+			$ses->token = $this->value('TOKEN', $resArray);
+			$this->token = $ses->token;
+		}
+		else {
+			$this->err($this->value('L_LONGMESSAGE0', $resArray));
+			return FALSE;
+		}
 
-            $this->err($this->value('L_LONGMESSAGE0', $resArray));
-            return false;
-        }
-           
-        return $resArray;
-    }
+		return $resArray;
+	}
 
 
-    public function getShippingDetails($ses) {
+	public function getShippingDetails($ses)
+	{
+		$query = array('TOKEN' => $ses->token);
 
-        $query = array('TOKEN' => $ses->token);
+		$resArray = $this->call('GetExpressCheckoutDetails', $query);
+		$status = strtoupper($this->value('ACK', $resArray));
 
-        $resArray = $this->call('GetExpressCheckoutDetails', $query);
-        $status = strtoupper($this->value('ACK', $resArray));
+		if (strcasecmp($status, 'success') != 0 && strcasecmp($status, 'successwithwarning') != 0) {
+			$this->err($this->value('L_LONGMESSAGE0', $resArray));
+			return FALSE;
+		}
 
-        if(strcasecmp($status, 'success') != 0 && strcasecmp($status, 'successwithwarning') != 0) {
+		return $resArray;
+	}
 
-            $this->err($this->value('L_LONGMESSAGE0', $resArray));
-            return false;
-        }
 
-        return $resArray;
-    }
-    
+	public function getEndPoint()
+	{
+		return $this->sandbox ? self::SANDBOX_END_POINT : self::END_POINT;
+	}
 
-    public function getEndPoint() {
 
-        return $this->sandbox ? self::SANDBOX_END_POINT : self::END_POINT;
-    }
+	private function call($method, $data)
+	{
+		$ch = curl_init($this->endPoint);
 
+		// Set up verbose mode
+		curl_setopt($ch, CURLOPT_VERBOSE, TRUE);
 
-    private function call($method, $data) {
+		//turning off the server and peer verification(TrustManager Concept).
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 
-        $ch = curl_init($this->endPoint);
+		// We should check if paypal has valid certificate
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, TRUE);
 
-        // Set up verbose mode
-        curl_setopt($ch, CURLOPT_VERBOSE, true);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 
-        //turning off the server and peer verification(TrustManager Concept).
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		// Just do normal POST
+		curl_setopt($ch, CURLOPT_POST, TRUE);
 
-        // We should check if paypal has valid certificate
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, true);
+		if ($this->useProxy) {
+			curl_setopt($ch, CURLOPT_PROXY, $this->proxyHost . ':' . $this->proxyPort);
+		}
 
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		// NVP Request
+		$resData = array_merge($data, array('METHOD' => $method));
+		$request = $this->buildQuery($resData);
 
-        // Just do normal POST
-        curl_setopt($ch, CURLOPT_POST, true);
-        
-        if ($this->useProxy)
-            curl_setopt($ch, CURLOPT_PROXY, $this->proxyHost. ':' . $this->proxyPort); 
+		// POST data
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
 
-        // NVP Request
-        $resData = array_merge($data, array('METHOD' => $method));
-        $request = $this->buildQuery($resData);
+		// Execute
+		$response = curl_exec($ch);
 
-        // POST data
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+		if (curl_errno($ch)) {
+			$this->err(curl_error($ch));
+		}
 
-        // Execute
-        $response = curl_exec($ch);
+		curl_close($ch);
 
-        if (curl_errno($ch))
-            $this->err(curl_error($ch));
+		return $this->deformatQuery($response);
+	}
 
-        curl_close($ch);
 
-        return $this->deformatQuery($response);
-    }
+	/**
+	 * Generates URL to PayPal for redirection.
+	 * @return Nette\Http\Url
+	 */
+	public function getUrl()
+	{
+		$url = new Url($this->sandbox ? self::SANDBOX_PAYPAL_URL : self::PAYPAL_URL);
 
+		$query = array(
+			'cmd' => '_express-checkout',
+			'token' => $this->token,
+		);
 
-    /**
-     * Generates URL to PayPal for redirection.
-     * @return Nette\Http\Url
-     */
-    public function getUrl() {
+		$url->setQuery($query);
 
-        $url = new Url($this->sandbox ? self::SANDBOX_PAYPAL_URL : self::PAYPAL_URL);
+		return $url;
+	}
 
-        $query = array(
-                       'cmd' => '_express-checkout',
-                       'token' => $this->token,
-                      );
 
-        $url->setQuery($query);
+	public function deformatQuery($query)
+	{
+		parse_str($query, $data);
+		return \Nette\ArrayHash::from($data);
+	}
 
-        return $url;
-    }
 
-    
-    public function deformatQuery($query) {
+	/**
+	 * Builds basic query to paypal.
+	 * @var array $data
+	 * @return string query
+	 */
+	public function buildQuery(array $data)
+	{
+		$controlData = array(
+			'VERSION' => self::VERSION,
+			'PWD' => $this->password,
+			'USER' => $this->username,
+			'SIGNATURE' => $this->signature,
+		);
 
-        parse_str($query, $data);
-        return \Nette\ArrayHash::from($data);
-    }
+		$resData = array_merge($data, $controlData);
 
+		//foreach ($data as $key => $value)
+		//$data[$key] = urlencode($value);
 
-    /**
-     * Builds basic query to paypal.
-     *
-     * @var array $data
-     * @return string query
-     */
-    public function buildQuery(array $data) {
+		return http_build_query($resData, '', '&');
+	}
 
-        $controlData = array(
-                             'VERSION' => self::VERSION,
-                             'PWD' => $this->password,
-                             'USER' => $this->username,
-                             'SIGNATURE' => $this->signature,
-                            );
 
-        $resData = array_merge($data, $controlData);
+	/**
+	 * If some error, true is returned.
+	 * @return bool
+	 */
+	public function isError()
+	{
+		return (bool)count($this->errors);
+	}
 
-        //foreach ($data as $key => $value)
-            //$data[$key] = urlencode($value);
 
-        return http_build_query($resData, '', '&');
-    }
+	public function getErrors()
+	{
+		return $this->errors;
+	}
 
 
-    /**
-     * If some error, true is returned.
-     *
-     * @return bool
-     */
-    public function isError() {
+	public function setSignature($signature)
+	{
+		return $this->setData('signature', (string)$signature);
+	}
 
-        return (bool) count($this->errors);
-    }
 
+	public function getSignature()
+	{
+		return $this->getData('signature');
+	}
 
-    public function getErrors() {
 
-        return $this->errors;
-    }
+	public function setPassword($password)
+	{
+		return $this->setData('password', (string)$password);
+	}
 
 
-    public function setSignature($signature) {
+	public function getPassword()
+	{
+		return $this->getData('password');
+	}
 
-        return $this->setData('signature', (string) $signature);
-    }
 
+	public function getUsername()
+	{
+		return $this->getData('username');
+	}
 
-    public function getSignature() {
 
-        return $this->getData('signature');
-    }
+	public function setUsername($username)
+	{
+		return $this->setData('username', (string)$username);
+	}
 
 
-    public function setPassword($password) {
+	public function getProxyPort()
+	{
+		return $this->getData('proxyPort');
+	}
 
-        return $this->setData('password', (string) $password);
-    }
 
+	public function setPort($proxyPort)
+	{
+		$this->data['proxyPort'] = (int)$proxyPort;
+		return $this;
+	}
 
-    public function getPassword() {
+	public function getProxyHost()
+	{
+		return $this->getData('proxyHost');
+	}
 
-        return $this->getData('password');
-    }
 
+	public function setHost($proxyHost)
+	{
+		return $this->setData('proxyHost', (string)$proxyHost);
+	}
 
-    public function getUsername() {
 
-        return $this->getData('username');
-    }
+	public function setSandBox($opt = TRUE)
+	{
+		$this->sandbox = (bool)$opt;
+		return $this;
+	}
 
 
-    public function setUsername($username) {
+	private function err($message)
+	{
+		$this->errors[] = $message;
+	}
 
-        return $this->setData('username', (string) $username);
-    }
 
-
-    public function getProxyPort() {
-
-        return $this->getData('proxyPort');
-    }
-
-
-    public function setPort($proxyPort) {
-
-        $this->data['proxyPort'] = (int) $proxyPort;
-        return $this;
-    }
-
-    public function getProxyHost() {
-
-        return $this->getData('proxyHost');
-    }
-
-
-    public function setHost($proxyHost) {
-
-        return $this->setData('proxyHost', (string) $proxyHost);
-    }
-
-
-    public function setSandBox($opt = true) {
-
-        $this->sandbox = (bool) $opt;
-        return $this;
-    }
-
-
-    private function err($message) {
-
-        $this->errors[] = $message;
-    }
-
-    
-    private function value($key, \Nette\ArrayHash $arr) {
-
-        return $arr->offsetExists($key) ? $arr->offsetGet($key) : '';
-    }
-
-
-};
+	private function value($key, \Nette\ArrayHash $arr)
+	{
+		return $arr->offsetExists($key) ? $arr->offsetGet($key) : '';
+	}
+}

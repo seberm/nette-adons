@@ -7,186 +7,186 @@
 namespace PayPal;
 
 use Nette,
-    Nette\Application\UI\Form;
+Nette\Application\UI\Form;
 
-class PayPalButton extends Nette\Application\UI\Control {
-    
-    /**
-     * PayPal's image source
-     */
-    const PAYPAL_IMAGE = 'https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif';
+class PayPalButton extends Nette\Application\UI\Control
+{
 
-    public $currencyCode = 'CZK';
-    public $paymentType = 'Order';
-    public $amount;
+	/**
+	 * PayPal's image source
+	 */
+	const PAYPAL_IMAGE = 'https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif';
 
-    /**
-     * @var PayPal\API
-     */
-    private $paypal = NULL;
+	public $currencyCode = 'CZK';
 
-    /**
-     * @var Nette\Localization\ITranslator
-     */
-    private $translator = NULL;
+	public $paymentType = 'Order';
 
-    public $onSuccess;
-    public $onCancel;
-    public $onError;
+	public $amount;
 
+	/**
+	 * @var API
+	 */
+	private $paypal = NULL;
 
-    public function __construct(Nette\ComponentModel\IContainer $parent = NULL, $name = NULL) {
+	/**
+	 * @var Nette\Localization\ITranslator
+	 */
+	private $translator = NULL;
 
-        parent::__construct($parent, $name);
+	public $onSuccess;
 
-        $this->paypal = new API;
-    }
+	public $onCancel;
 
+	public $onError;
 
-    public function setTranslator(Nette\Localization\ITranslator $translator) {
 
-        $this->translator = $translator;
-    }
+	public function __construct(Nette\ComponentModel\IContainer $parent = NULL, $name = NULL)
+	{
+		parent::__construct($parent, $name);
 
+		$this->paypal = new API;
+	}
 
-    final public function getTranslator() {
 
-        return $this->translator;
-    }
+	public function setTranslator(Nette\Localization\ITranslator $translator)
+	{
+		$this->translator = $translator;
+	}
 
 
-    public function render() {
+	final public function getTranslator()
+	{
+		return $this->translator;
+	}
 
-        $this->template->setFile(__DIR__ . '/default.latte')
-                       ->render();
-    }
 
+	public function render()
+	{
+		$this->template->setFile(__DIR__ . '/default.latte')
+			->render();
+	}
 
-    public function setCredentials(array $params) {
 
-        $this->paypal->setData($params);
+	public function setCredentials(array $params)
+	{
+		$this->paypal->setData($params);
+		return $this;
+	}
 
-        return $this;
-    }
 
+	public function setSandBox($stat = TRUE)
+	{
+		$this->paypal->setSandbox($stat);
+		return $this;
+	}
 
-    public function setSandBox($stat = true) {
 
-        $this->paypal->setSandbox($stat);
-        return $this;
-    }
+	public function createComponentPaypalForm()
+	{
+		$form = new Form;
 
+		if ($this->translator) {
+			$form->setTranslator($this->translator);
+		}
 
-    public function createComponentPaypalForm() {
+		$form->addImage('paypalCheckOut', self::PAYPAL_IMAGE, 'Check out with PayPal');
 
-        $form = new Form;
+		$form->onSuccess[] = callback($this, 'initPayment');
 
-        if ($this->translator)
-            $form->setTranslator($this->translator);
+		return $form;
+	}
 
-        $form->addImage('paypalCheckOut', self::PAYPAL_IMAGE, 'Check out with PayPal');
 
-        $form->onSuccess[] = callback($this, 'initPayment');
+	public function initPayment(Form $paypalForm)
+	{
+		$this->paypal->doExpressCheckout($this->amount,
+			$this->currencyCode,
+			$this->paymentType,
+			$this->buildUrl('process'),
+			$this->buildUrl('cancel'),
+			$this->presenter->session->getSection('paypal'));
 
-        return $form;
-    }
+		if ($this->paypal->isError()) {
+			$this->onError($this->paypal->errors);
+			return;
+		}
 
+		$this->redirectToPaypal();
+	}
 
-    public function initPayment(Form $paypalForm) {
 
-        $this->paypal->doExpressCheckout($this->amount,
-                                         $this->currencyCode,
-                                         $this->paymentType,
-                                         $this->buildUrl('process'),
-                                         $this->buildUrl('cancel'),
-                                         $this->presenter->session->getSection('paypal'));
+	public function handleProcess()
+	{
+		$data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
 
-        if ($this->paypal->isError()) {
+		$component = $this->getComponent('paypalForm');
+		if ($this->paypal->error) {
+			foreach ($this->paypal->errors as $error) {
+				$component->addError($error);
+			}
+			return;
+		}
 
-            $this->onError($this->paypal->errors);
-            return;
-        }
+		// Callback
+		$this->onSuccess($data);
+	}
 
-        $this->redirectToPaypal();
-    }
 
+	public function handleCancel()
+	{
+		$data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
 
-    public function handleProcess() {
+		$component = $this->getComponent('paypalForm');
+		if ($this->paypal->error) {
+			foreach ($this->paypal->errors as $error) {
+				$component->addError($error);
+			}
+			return;
+		}
 
-        $data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
+		// Callback
+		$this->onCancel($data);
+	}
 
-        $component = $this->getComponent('paypalForm');
-        if ($this->paypal->error) {
 
-            foreach ($this->paypal->errors as $error)
-               $component->addError($error); 
+	private function redirectToPaypal()
+	{
+		$url = $this->paypal->url;
+		$this->presenter->redirectUrl($url);
+	}
 
-            return;
-        }
 
-        // Callback
-        $this->onSuccess($data);
-    }
+	public function loadState(array $params)
+	{
+		parent::loadState($params);
+	}
 
 
-    public function handleCancel() {
+	private function buildUrl($signal)
+	{
+		$url = $this->presenter->link($this->name . ":${signal}!");
 
-        $data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
+		// Some better way to do it in Nette?
+		return (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $url;
+	}
 
-        $component = $this->getComponent('paypalForm');
-        if ($this->paypal->error) {
 
-            foreach ($this->paypal->errors as $error)
-               $component->addError($error); 
+	public function setAmount($amount)
+	{
+		$this->amount = $amount;
+		return $this;
+	}
 
-            return;
-        }
+	public function setCurrency($currency)
+	{
+		$this->currencyCode = $currency;
+		return $this;
+	}
 
-        // Callback
-        $this->onCancel($data);
-    }
+	public function setPaymentType($type)
+	{
+		$this->paymentType = $type;
+		return $this;
+	}
+}
 
-
-    private function redirectToPaypal() {
-
-        $url = $this->paypal->url;
-        $this->presenter->redirectUrl($url);
-    }
-
-
-    public function loadState(array $params) {
-
-        parent::loadState($params);
-
-    }
-
-
-    private function buildUrl($signal) {
-
-        $url = $this->presenter->link($this->name . ":${signal}!");
-
-        // Some better way to do it in Nette?
-        return (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST']. $url;
-    }
-
-
-    public function setAmount($amount) {
-
-        $this->amount = $amount;
-        return $this;
-    }
-
-    public function setCurrency($currency) {
-
-        $this->currencyCode = $currency;
-        return $this;
-    }
-
-    public function setPaymentType($type) {
-
-        $this->paymentType = $type;
-        return $this;
-    }
-
-
-};
