@@ -134,6 +134,35 @@ class API extends \Nette\Object
 	}
 
 
+	public function doPayment($paymentType, $ses)
+	{
+		$details = $this->getShippingDetails($ses);
+
+		if (!$details) {
+			return FALSE;
+		}
+
+		$query = array(
+			'PAYMENTACTION' => $paymentType,
+			'PAYERID' => $details['PAYERID'],
+			'TOKEN' => $ses->token,
+			'AMT' => $details['AMT'],
+			'CURRENCYCODE' => $details['CURRENCYCODE'],
+			'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly'
+		);
+
+		$resArray = $this->call('DoExpressCheckoutPayment', $query);
+		$status = strtoupper($this->value('ACK', $resArray));
+
+		if (strcasecmp($status, 'success') != 0 && strcasecmp($status, 'successwithwarning') != 0) {
+			$this->err($this->value('L_LONGMESSAGE0', $resArray));
+			return FALSE;
+		}
+
+		return $resArray;
+	}
+
+
 	public function getEndPoint()
 	{
 		return $this->sandbox ? self::SANDBOX_END_POINT : self::END_POINT;

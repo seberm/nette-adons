@@ -17,6 +17,7 @@ class PayPalButton extends Nette\Application\UI\Control
 	 */
 	const PAYPAL_IMAGE = 'https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif';
 
+	public $payImage = 'https://www.paypalobjects.com/en_US/i/btn/x-click-but3.gif';
 	public $currencyCode = 'CZK';
 
 	public $paymentType = 'Order';
@@ -33,7 +34,9 @@ class PayPalButton extends Nette\Application\UI\Control
 	 */
 	private $translator = NULL;
 
-	public $onSuccess;
+	public $onSuccessBuy;
+
+	public $onSuccessPayment;
 
 	public $onCancel;
 
@@ -60,9 +63,16 @@ class PayPalButton extends Nette\Application\UI\Control
 	}
 
 
-	public function render()
+	public function renderBuy()
 	{
-		$this->template->setFile(__DIR__ . '/default.latte')
+		$this->template->setFile(__DIR__ . '/buy.latte')
+			->render();
+	}
+
+
+	public function renderPay()
+	{
+		$this->template->setFile(__DIR__ . '/pay.latte')
 			->render();
 	}
 
@@ -81,7 +91,7 @@ class PayPalButton extends Nette\Application\UI\Control
 	}
 
 
-	public function createComponentPaypalForm()
+	protected function createComponentPaypalBuyForm()
 	{
 		$form = new Form;
 
@@ -97,12 +107,12 @@ class PayPalButton extends Nette\Application\UI\Control
 	}
 
 
-	public function initPayment(Form $paypalForm)
+	public function initPayment(Form $paypalBuyForm)
 	{
 		$this->paypal->doExpressCheckout($this->amount,
 			$this->currencyCode,
 			$this->paymentType,
-			$this->buildUrl('process'),
+			$this->buildUrl('processBuy'),
 			$this->buildUrl('cancel'),
 			$this->presenter->session->getSection('paypal'));
 
@@ -115,11 +125,44 @@ class PayPalButton extends Nette\Application\UI\Control
 	}
 
 
-	public function handleProcess()
+	protected function createComponentPaypalPayForm()
+	{
+		$form = new Form;
+
+		if ($this->translator) {
+			$form->setTranslator($this->translator);
+		}
+
+		$form->addImage('paypalPay', $this->payImage, 'Pay with PayPal');
+
+		$form->onSuccess[] = callback($this, 'processPayment');
+
+		return $form;
+	}
+
+
+	public function processPayment(Form $form)
+	{
+		$data = $this->paypal->doPayment(
+			$this->paymentType,
+			$this->presenter->session->getSection('paypal')
+		);
+
+		if ($this->paypal->isError()) {
+			$this->onError($this->paypal->errors);
+			return;
+		}
+
+		// Callback
+		$this->onSuccessPayment($data);
+	}
+
+
+	public function handleProcessBuy()
 	{
 		$data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
 
-		$component = $this->getComponent('paypalForm');
+		$component = $this->getComponent('paypalBuyForm');
 		if ($this->paypal->isError()) {
 			foreach ($this->paypal->errors as $error) {
 				$component->addError($error);
@@ -128,7 +171,7 @@ class PayPalButton extends Nette\Application\UI\Control
 		}
 
 		// Callback
-		$this->onSuccess($data);
+		$this->onSuccessBuy($data);
 	}
 
 
@@ -136,7 +179,7 @@ class PayPalButton extends Nette\Application\UI\Control
 	{
 		$data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
 
-		$component = $this->getComponent('paypalForm');
+		$component = $this->getComponent('paypalBuyForm');
 		if ($this->paypal->isError()) {
 			foreach ($this->paypal->errors as $error) {
 				$component->addError($error);

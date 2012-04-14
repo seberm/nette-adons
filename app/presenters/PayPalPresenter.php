@@ -13,12 +13,20 @@ final class PayPalPresenter extends BasePresenter {
         //$button->setPaymentMethod(API::CHECKOUT);
 
         // If order success, call processOrder function
-        $button->onSuccess[] = callback($this, 'processOrder');
+        $button->onSuccessBuy[] = callback($this, 'processBuy');
+		$button->onSuccessPayment[] = callback($this, 'processPayment');
         $button->onCancel[] = callback($this, 'cancelOrder');
         $button->onError[] = callback($this, 'errorOccurred');
 
         return $button;
     }
+
+
+	public function processPayment($data) {
+
+		dump($data);
+		exit;
+	}
 
 
     public function errorOccurred($errors) {
@@ -28,10 +36,12 @@ final class PayPalPresenter extends BasePresenter {
     }
 
 
-    public function processOrder($data) {
+    public function processBuy($data) {
 
-        dump($data);
-        exit;
+		$this->redirect('pay');
+
+//        dump($data);
+//        exit;
     }
 
     /**
