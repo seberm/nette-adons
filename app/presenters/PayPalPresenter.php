@@ -3,17 +3,34 @@
 use PayPal\PayPalButton,
     PayPal\API;
 
+use \Nette\Application\UI\Form,
+    \Nette\Security\AuthenticationException;
+
+
 final class PayPalPresenter extends BasePresenter {
+
+    private $button = NULL;
+
+
+    protected function startup() {
+
+        parent::startup();
+        $this->button = $this->context->createPayPalButton();
+    }
 
 
     public function createComponentPaypalButton() {
 
-        $button = $this->context->createPayPalButton();
+        $button = $this->button;
 
+        $button->addItemToCart('Biofeedback HW', 'toto je super biofeedback hardware', 12, 1);
+        $button->addItemToCart('neco', 'bububu', 10, 1);
+        $button->setPaymentType('Sale');
+        $button->shipping = 4;
+        $button->tax = 3;
         //$button->setPaymentMethod(API::CHECKOUT);
 
-        // If order success, call processOrder function
-        $button->onSuccess[] = callback($this, 'processOrder');
+        $button->onConfirmation[] = callback($this, 'confirmOrder');
         $button->onCancel[] = callback($this, 'cancelOrder');
         $button->onError[] = callback($this, 'errorOccurred');
 
@@ -27,12 +44,6 @@ final class PayPalPresenter extends BasePresenter {
         exit(1);
     }
 
-
-    public function processOrder($data) {
-
-        dump($data);
-        exit;
-    }
 
     /**
      * Gets data in PayPal's format:
@@ -84,10 +95,75 @@ Nette\ArrayHash(44) {
    PAYMENTREQUEST_0_SHIPTOCOUNTRYNAME => "Canada" (6)
    PAYMENTREQUESTINFO_0_ERRORCODE => "0"
 */
+    public function confirmOrder($data) {
+        //unused($data);
+
+        $this->redirect('confirm');
+    }
+
+
+    public function processOrder($data) {
+
+        // Review payment details
+        dump($data);
+        exit;
+    }
+
 
     public function cancelOrder($data) {
 
         dump($data);
         exit;
+    }
+
+
+    public function renderConfirm() {
+
+        $this->template->details = $this->button->api->getShippingDetails($this->presenter->session->getSection('paypal'));
+
+        
+dump($this->template->details);
+    }
+
+
+    public function createComponentConfirmButton () {
+
+        $form = new Form;
+        //$form->setTranslator($this->context->translator);
+        $form->addProtection('It\'s neccessary to resend this form. Security token just expired.');
+
+        $form->addSubmit('confirm', 'Confirm payment');
+        $form->onSuccess[] = callback($this, 'confirmPayment');
+
+        return $form;
+    }
+
+
+    public function confirmPayment($form) {
+
+        try {
+
+            if ($data = $this->button->api->confirmExpressCheckout($this->presenter->session->getSection('paypal'))) {
+                
+                $this->flashMessage('Transaction was successful.');
+            } else {
+
+                foreach ($this->button->api->errors as $error)
+                    $this->flashMessage($error, 'warning');
+            }
+
+            $this->redirect('paypal:');
+
+        } catch (AuthenticationException $e) {
+
+            $form->addError($e->getMessage());
+        }
+
+    }
+
+
+    public function createComponentCancelButton() {
+
+        return new Form;
     }
 }

@@ -35,7 +35,6 @@ common:
             class: \PayPal\PayPalButton
             setup:
                     - setCredentials(%paypal.api%)
-                    - setAmount(%paypal.amount%)
                     - setSandBox(%paypal.sandbox%)
 
 

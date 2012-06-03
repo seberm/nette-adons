@@ -15,7 +15,8 @@ class API extends \Nette\Object {
     /**
      * Tells which version of PayPay API we want use
      */
-    const VERSION = '66';
+    //const VERSION = '66';
+    const VERSION = '72.0';
 
     // PayPal SandBox URLs
     const SANDBOX_END_POINT = 'https://api-3t.sandbox.paypal.com/nvp';
@@ -38,10 +39,13 @@ class API extends \Nette\Object {
     private $useProxy = false;
 
     private $token;
+    public $invoiceValue = NULL;
 
     private $error = false;
 
     private $errors = array();
+
+    private $cart = array();
 
     
     public function __construct($opts = array()) {
@@ -81,18 +85,53 @@ class API extends \Nette\Object {
     }
 
 
+    public function addItem($name, $description, $price, $quantity) {
+
+        $this->cart[] = array(
+                                //'L_PAYMENTREQUEST_0_NAME0' => 'Biofeedback HW',
+                                //'L_PAYMENTREQUEST_0_DESC0' =>'The+description+of+product+1',
+                                //'L_PAYMENTREQUEST_0_AMT0' => 2,
+                                //'L_PAYMENTREQUEST_0_QTY0' => 1,
+
+                                'L_PAYMENTREQUEST_0_NAME' => $name,
+                                'L_PAYMENTREQUEST_0_DESC' => $description,
+                                'L_PAYMENTREQUEST_0_AMT' => $price,
+                                'L_PAYMENTREQUEST_0_QTY' => $quantity,
+                            );
+
+    }
+
+
     /**
      * Prepares the parameters for the SetExpressCheckout API Call.
      */
-    public function doExpressCheckout($paymentAmount, $currencyCodeType, $paymentType, $returnURL, $cancelURL, $ses) { 
+    public function setExpressCheckout($shipping, $tax, $currencyCodeType, $paymentType, $returnURL, $cancelURL, $ses) { 
 
-        $query = array('PAYMENTREQUEST_0_AMT' => $paymentAmount,
+        $query = array(
                        'PAYMENTREQUEST_0_PAYMENTACTION' => $paymentType,
                        'RETURNURL' => $returnURL,
                        'CANCELURL' => $cancelURL,
                        'PAYMENTREQUEST_0_CURRENCYCODE' => $currencyCodeType,
                      );
-        
+
+        $id = 0;
+        $itemsPrice = 0;
+        foreach ($this->cart as $item) {
+            foreach ($item as $key => $val) {
+
+                if ($key == 'L_PAYMENTREQUEST_0_AMT')
+                    $itemsPrice += $val;
+
+                $query[$key.$id] = $val;
+            }
+
+            $id++;
+        }
+
+        $query['PAYMENTREQUEST_0_ITEMAMT'] = $itemsPrice;
+        $query['PAYMENTREQUEST_0_TAXAMT'] = $tax;
+        $query['PAYMENTREQUEST_0_SHIPPINGAMT'] = $shipping;
+        $paymentAmount = $query['PAYMENTREQUEST_0_AMT'] = $query['PAYMENTREQUEST_0_ITEMAMT'] + $query['PAYMENTREQUEST_0_TAXAMT'] + $query['PAYMENTREQUEST_0_SHIPPINGAMT'];
 
         $resArray = $this->call('SetExpressCheckout', $query);
 
@@ -101,8 +140,42 @@ class API extends \Nette\Object {
         if (strcasecmp($status, 'success') === 0 || strcasecmp($status, 'successwithwarning') === 0) {
 
             $ses->token = $this->value('TOKEN', $resArray);
+            $ses->paymentType = $paymentType;
+            $ses->currencyCodeType = $currencyCodeType;
+            $ses->amount = $paymentAmount;
+
             $this->token = $ses->token;
             
+        } else {
+
+            $this->err($this->value('L_LONGMESSAGE0', $resArray));
+            return false;
+        }
+           
+        return $resArray;
+    }
+
+
+    /**
+     * Confirmation of paypal payment
+     */
+    public function confirmExpressCheckout($ses) { 
+
+        $query = array('PAYMENTREQUEST_0_AMT' => $ses->amount,
+                       'PAYERID' => $ses->payerID,
+                       'TOKEN' => $ses->token,
+                       'PAYMENTREQUEST_0_PAYMENTACTION' => $ses->paymentType,
+                       'PAYMENTREQUEST_0_CURRENCYCODE' => $ses->currencyCodeType,
+                       'IPADDRESS' => urlencode($_SERVER['SERVER_NAME']),
+                     );
+
+        $resArray = $this->call('DoExpressCheckoutPayment', $query);
+
+        $status = strtoupper($this->value('ACK', $resArray));
+
+        if (strcasecmp($status, 'success') === 0 || strcasecmp($status, 'successwithwarning') === 0) {
+
+            $ses->remove();
         } else {
 
             $this->err($this->value('L_LONGMESSAGE0', $resArray));
@@ -126,6 +199,7 @@ class API extends \Nette\Object {
             return false;
         }
 
+        $ses->payerID = $this->value('PAYERID', $resArray);
         return $resArray;
     }
     
