@@ -16,7 +16,8 @@ class PayPalButton extends Nette\Application\UI\Control {
      */
     const PAYPAL_IMAGE = 'https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif';
 
-    public $currencyCode = 'CZK';
+
+    public $currencyCode = API::CURRENCY_CROUND;
     public $paymentType = 'Order';
     public $shipping = 0;
     public $tax = 0;
@@ -194,9 +195,9 @@ class PayPalButton extends Nette\Application\UI\Control {
     }
 
 
-    public function setCurrency($currency) {
+    public function setCurrencyCode($currencyCode) {
 
-        $this->currencyCode = $currency;
+        $this->currencyCode = $currencyCode;
         return $this;
     }
 

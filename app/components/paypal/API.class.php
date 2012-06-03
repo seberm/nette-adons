@@ -26,6 +26,11 @@ class API extends \Nette\Object {
     const END_POINT = 'https://api-3t.paypal.com/nvp';
     const PAYPAL_URL = 'https://www.paypal.com/cgi-bin/webscr';
 
+
+    const CURRENCY_CROUND = 'CZK';
+    const CURRENCY_EURO = 'EUR';
+
+
     // Options
     private $data = array(
                           'proxyHost' => '127.0.0.1',
@@ -40,11 +45,8 @@ class API extends \Nette\Object {
 
     private $token;
     public $invoiceValue = NULL;
-
     private $error = false;
-
     private $errors = array();
-
     private $cart = array();
 
     
@@ -85,20 +87,17 @@ class API extends \Nette\Object {
     }
 
 
+    /**
+     * Adds new item to PayPals Cart
+     */
     public function addItem($name, $description, $price, $quantity) {
 
         $this->cart[] = array(
-                                //'L_PAYMENTREQUEST_0_NAME0' => 'Biofeedback HW',
-                                //'L_PAYMENTREQUEST_0_DESC0' =>'The+description+of+product+1',
-                                //'L_PAYMENTREQUEST_0_AMT0' => 2,
-                                //'L_PAYMENTREQUEST_0_QTY0' => 1,
-
                                 'L_PAYMENTREQUEST_0_NAME' => $name,
                                 'L_PAYMENTREQUEST_0_DESC' => $description,
                                 'L_PAYMENTREQUEST_0_AMT' => $price,
                                 'L_PAYMENTREQUEST_0_QTY' => $quantity,
                             );
-
     }
 
 
@@ -131,7 +130,7 @@ class API extends \Nette\Object {
         $query['PAYMENTREQUEST_0_ITEMAMT'] = $itemsPrice;
         $query['PAYMENTREQUEST_0_TAXAMT'] = $tax;
         $query['PAYMENTREQUEST_0_SHIPPINGAMT'] = $shipping;
-        $paymentAmount = $query['PAYMENTREQUEST_0_AMT'] = $query['PAYMENTREQUEST_0_ITEMAMT'] + $query['PAYMENTREQUEST_0_TAXAMT'] + $query['PAYMENTREQUEST_0_SHIPPINGAMT'];
+        $query['PAYMENTREQUEST_0_AMT'] = $query['PAYMENTREQUEST_0_ITEMAMT'] + $query['PAYMENTREQUEST_0_TAXAMT'] + $query['PAYMENTREQUEST_0_SHIPPINGAMT'];
 
         $resArray = $this->call('SetExpressCheckout', $query);
 
@@ -142,7 +141,7 @@ class API extends \Nette\Object {
             $ses->token = $this->value('TOKEN', $resArray);
             $ses->paymentType = $paymentType;
             $ses->currencyCodeType = $currencyCodeType;
-            $ses->amount = $paymentAmount;
+            $ses->amount = $query['PAYMENTREQUEST_0_AMT'];
 
             $this->token = $ses->token;
             

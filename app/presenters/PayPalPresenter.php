@@ -23,6 +23,8 @@ final class PayPalPresenter extends BasePresenter {
 
         $button = $this->button;
 
+        $button->setCurrencyCode(API::CURRENCY_EURO);
+
         $button->addItemToCart('Biofeedback HW', 'toto je super biofeedback hardware', 12, 1);
         $button->addItemToCart('neco', 'bububu', 10, 1);
         $button->setPaymentType('Sale');
