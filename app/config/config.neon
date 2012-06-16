@@ -6,17 +6,6 @@
 #
 common:
     parameters:
-        paypal:
-            api:
-                username = 'seberm_1332081338_biz_api1.gmail.com'
-                password = '1332081363'
-                signature = 'AWiH1IO0zFZrEQbbn0JwDZHbWukIAebmYjpOylRCqBGGgztea2bku.N4'
-
-            # Are we using paypal sandbox?
-            sandbox = true
-
-            # Express checkout amount
-            amount = 123
 
     php:
         date.timezone: Europe/Prague
@@ -29,16 +18,30 @@ common:
 
     services:
 
-
     factories:
         payPalButton:
             class: \PayPal\PayPalButton
             setup:
                     - setCredentials(%paypal.api%)
                     - setSandBox(%paypal.sandbox%)
-                    - setAmount(%paypal.amount%)
 
 
 production < common:
+    parameters:
+        paypal:
+            api:
+                username = ''
+                password = ''
+                signature = ''
+
+            sandbox = false # false is a default option
+
 
 development < common:
+    parameters:
+        paypal:
+            api:
+                username = 'seberm_1332081338_biz_api1.gmail.com'
+                password = '1332081363'
+                signature = 'AWiH1IO0zFZrEQbbn0JwDZHbWukIAebmYjpOylRCqBGGgztea2bku.N4'
+            sandbox = true

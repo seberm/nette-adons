@@ -1,13 +1,13 @@
 <?php
 /**
- * @class PayPal\PayPalButton (Nette 2.0 Component)
+ * @class PayPalButton (Nette 2.0 Component)
  * @author Otto Sabart <seberm[at]gmail[dot]com> (www.seberm.com)
  */
 
 namespace PayPal;
 
 use Nette,
-Nette\Application\UI\Form;
+    Nette\Application\UI\Form;
 
 class PayPalButton extends Nette\Application\UI\Control
 {
@@ -31,7 +31,7 @@ class PayPalButton extends Nette\Application\UI\Control
 	/**
 	 * @var API
 	 */
-	private $paypal = NULL;
+	private $api = NULL;
 
 	/**
 	 * @var Nette\Localization\ITranslator
@@ -50,7 +50,7 @@ class PayPalButton extends Nette\Application\UI\Control
 	{
 		parent::__construct($parent, $name);
 
-		$this->paypal = new API;
+		$this->api = new API;
 	}
 
 
@@ -82,14 +82,14 @@ class PayPalButton extends Nette\Application\UI\Control
 
 	public function setCredentials(array $params)
 	{
-		$this->paypal->setData($params);
+		$this->api->setData($params);
 		return $this;
 	}
 
 
 	public function setSandBox($stat = TRUE)
 	{
-		$this->paypal->setSandbox($stat);
+		$this->api->setSandbox($stat);
 		return $this;
 	}
 
@@ -112,15 +112,15 @@ class PayPalButton extends Nette\Application\UI\Control
 
 	public function initPayment(Form $paypalBuyForm)
 	{
-		$this->paypal->doExpressCheckout($this->amount,
+		$this->api->doExpressCheckout($this->amount,
 			$this->currencyCode,
 			$this->paymentType,
 			$this->buildUrl('processBuy'),
 			$this->buildUrl('cancel'),
 			$this->presenter->session->getSection('paypal'));
 
-		if ($this->paypal->isError()) {
-			$this->onError($this->paypal->errors);
+		if ($this->api->isError()) {
+			$this->onError($this->api->errors);
 			return;
 		}
 
@@ -189,14 +189,14 @@ class PayPalButton extends Nette\Application\UI\Control
 
 	public function processPayment(Form $form)
 	{
-		$data = $this->paypal->doPayment(
+		$data = $this->api->doPayment(
 			$this->paymentType,
 			$this->presenter->session->getSection('paypal')
 		);
 
 
-		if ($this->paypal->isError()) {
-			$this->onError($this->paypal->errors);
+		if ($this->api->isError()) {
+			$this->onError($this->api->errors);
 			return;
 		}
 
@@ -207,11 +207,11 @@ class PayPalButton extends Nette\Application\UI\Control
 
 	public function handleProcessBuy()
 	{
-		$data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
+		$data = $this->api->getShippingDetails($this->presenter->session->getSection('paypal'));
 
 		$component = $this->getComponent('paypalBuyForm');
-		if ($this->paypal->isError()) {
-			foreach ($this->paypal->errors as $error) {
+		if ($this->api->isError()) {
+			foreach ($this->api->errors as $error) {
 				$component->addError($error);
 			}
 			return;
@@ -224,11 +224,11 @@ class PayPalButton extends Nette\Application\UI\Control
 
 	public function handleCancel()
 	{
-		$data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
+		$data = $this->api->getShippingDetails($this->presenter->session->getSection('paypal'));
 
 		$component = $this->getComponent('paypalBuyForm');
-		if ($this->paypal->isError()) {
-			foreach ($this->paypal->errors as $error) {
+		if ($this->api->isError()) {
+			foreach ($this->api->errors as $error) {
 				$component->addError($error);
 			}
 			return;
@@ -241,7 +241,7 @@ class PayPalButton extends Nette\Application\UI\Control
 
 	private function redirectToPaypal()
 	{
-		$url = $this->paypal->url;
+		$url = $this->api->url;
 		$this->presenter->redirectUrl($url);
 	}
 

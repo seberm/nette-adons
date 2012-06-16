@@ -156,7 +156,7 @@ class API extends \Nette\Object
 			'RETURNURL' => $returnURL,
 			'CANCELURL' => $cancelURL,
 			'PAYMENTREQUEST_0_CURRENCYCODE' => $currencyCodeType,
-			'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly'
+			'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
 		);
 
 		$resArray = $this->call('SetExpressCheckout', $query);

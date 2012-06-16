@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>PayPal Module Example</title>
+	<title>{block #title|stripTags|trim}{/block}&nbsp;|&nbsp;PayPal Module Examples</title>
 </head>
 
 <body>
+    <div id="menu">
+        <ul>
+            <li><a n:href="InstantPayment:">Express-Checkout Instant Payment</a></li>
+            <li><a n:href="Order:">Express-Checkout Order</a></li>
+        </ul>
+    </div>
+
 	<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
 
 	{include #content}

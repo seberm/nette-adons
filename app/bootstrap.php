@@ -31,8 +31,8 @@ $configurator->addConfig(__DIR__ . '/config/config.neon');
 $container = $configurator->createContainer();
 
 // Setup router
-$container->router[] = new Route('index.php', 'PayPal:default', Route::ONE_WAY);
-$container->router[] = new Route('<presenter>/<action>[/<id>]', 'PayPal:default');
+$container->router[] = new Route('index.php', 'Main:default', Route::ONE_WAY);
+$container->router[] = new Route('<presenter>/<action>[/<id>]', 'Main:default');
 
 
 // Configure and run the application!
