@@ -1,0 +1,11 @@
+{block content}
+
+The confirmation page <br />
+Token is: {$details->TOKEN}<br />
+Payer ID: {$details->PAYERID}<br />
+Payer status: {$details->PAYERSTATUS}<br />
+Price: {$details->PAYMENTREQUEST_0_AMT} {$details->PAYMENTREQUEST_0_CURRENCYCODE}
+
+{control cancelButton}
+{control confirmButton}
+{/block}
