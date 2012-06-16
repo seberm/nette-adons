@@ -8,21 +8,25 @@ final class PayPalPresenter extends BasePresenter {
 
     public function createComponentPaypalButton() {
 
-        $button = new PayPalButton;
+        $button = $this->context->createPayPalButton();
 
-        $credentials = $this->context->params['paypal']['api'];
-        $button->setCredentials($credentials)
-               ->setSandBox() // enables paypal sandbox mode (http://developer.paypal.com)
-               //->setPaymentMethod(API::CHECKOUT);
-               ->setAmount(123);
+        //$button->setPaymentMethod(API::CHECKOUT);
 
         // If order success, call processOrder function
-        $button->onSuccess[] = callback($this, 'processOrder');
+        $button->onSuccessBuy[] = callback($this, 'processBuy');
+		$button->onSuccessPayment[] = callback($this, 'processPayment');
         $button->onCancel[] = callback($this, 'cancelOrder');
         $button->onError[] = callback($this, 'errorOccurred');
 
         return $button;
     }
+
+
+	public function processPayment($data) {
+
+		dump($data);
+		exit;
+	}
 
 
     public function errorOccurred($errors) {
@@ -32,10 +36,12 @@ final class PayPalPresenter extends BasePresenter {
     }
 
 
-    public function processOrder($data) {
+    public function processBuy($data) {
 
-        dump($data);
-        exit;
+		$this->redirect('pay');
+
+//        dump($data);
+//        exit;
     }
 
     /**

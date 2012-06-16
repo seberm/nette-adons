@@ -7,186 +7,230 @@
 namespace PayPal;
 
 use Nette,
-    Nette\Application\UI\Form;
+Nette\Application\UI\Form;
 
-class PayPalButton extends Nette\Application\UI\Control {
-    
-    /**
-     * PayPal's image source
-     */
-    const PAYPAL_IMAGE = 'https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif';
+class PayPalButton extends Nette\Application\UI\Control
+{
 
-    public $currencyCode = 'CZK';
-    public $paymentType = 'Order';
-    public $amount;
+	/**
+	 * PayPal's image source
+	 */
+	const PAYPAL_IMAGE = 'https://www.paypalobjects.com/en_US/i/btn/btn_xpressCheckout.gif';
 
-    /**
-     * @var PayPal\API
-     */
-    private $paypal = NULL;
+	public $payImage = 'https://www.paypalobjects.com/en_US/i/btn/x-click-but3.gif';
 
-    /**
-     * @var Nette\Localization\ITranslator
-     */
-    private $translator = NULL;
+	public $currencyCode = 'EUR';
 
-    public $onSuccess;
-    public $onCancel;
-    public $onError;
+	public $paymentType = 'Sale'; // keep Sale for instant payment
 
+	public $amount;
 
-    public function __construct(Nette\ComponentModel\IContainer $parent = NULL, $name = NULL) {
+	/**
+	 * @var API
+	 */
+	private $paypal = NULL;
 
-        parent::__construct($parent, $name);
+	/**
+	 * @var Nette\Localization\ITranslator
+	 */
+	private $translator = NULL;
 
-        $this->paypal = new API;
-    }
+	public $onSuccessBuy;
 
+	public $onSuccessPayment;
 
-    public function setTranslator(Nette\Localization\ITranslator $translator) {
+	public $onCancel;
 
-        $this->translator = $translator;
-    }
+	public $onError;
 
 
-    final public function getTranslator() {
+	public function __construct(Nette\ComponentModel\IContainer $parent = NULL, $name = NULL)
+	{
+		parent::__construct($parent, $name);
 
-        return $this->translator;
-    }
+		$this->paypal = new API;
+	}
 
 
-    public function render() {
+	public function setTranslator(Nette\Localization\ITranslator $translator)
+	{
+		$this->translator = $translator;
+	}
 
-        $this->template->setFile(__DIR__ . '/default.latte')
-                       ->render();
-    }
 
+	final public function getTranslator()
+	{
+		return $this->translator;
+	}
 
-    public function setCredentials(array $params) {
 
-        $this->paypal->setData($params);
+	public function renderBuy()
+	{
+		$this->template->setFile(__DIR__ . '/buy.latte')
+			->render();
+	}
 
-        return $this;
-    }
 
+	public function renderPay()
+	{
+		$this->template->setFile(__DIR__ . '/pay.latte')
+			->render();
+	}
 
-    public function setSandBox($stat = true) {
 
-        $this->paypal->setSandbox($stat);
-        return $this;
-    }
+	public function setCredentials(array $params)
+	{
+		$this->paypal->setData($params);
+		return $this;
+	}
 
 
-    public function createComponentPaypalForm() {
+	public function setSandBox($stat = TRUE)
+	{
+		$this->paypal->setSandbox($stat);
+		return $this;
+	}
 
-        $form = new Form;
 
-        if ($this->translator)
-            $form->setTranslator($this->translator);
+	protected function createComponentPaypalBuyForm()
+	{
+		$form = new Form;
 
-        $form->addImage('paypalCheckOut', self::PAYPAL_IMAGE, 'Check out with PayPal');
+		if ($this->translator) {
+			$form->setTranslator($this->translator);
+		}
 
-        $form->onSuccess[] = callback($this, 'initPayment');
+		$form->addImage('paypalCheckOut', self::PAYPAL_IMAGE, 'Check out with PayPal');
 
-        return $form;
-    }
+		$form->onSuccess[] = callback($this, 'initPayment');
 
+		return $form;
+	}
 
-    public function initPayment(Form $paypalForm) {
 
-        $this->paypal->doExpressCheckout($this->amount,
-                                         $this->currencyCode,
-                                         $this->paymentType,
-                                         $this->buildUrl('process'),
-                                         $this->buildUrl('cancel'),
-                                         $this->presenter->session->getSection('paypal'));
+	public function initPayment(Form $paypalBuyForm)
+	{
+		$this->paypal->doExpressCheckout($this->amount,
+			$this->currencyCode,
+			$this->paymentType,
+			$this->buildUrl('processBuy'),
+			$this->buildUrl('cancel'),
+			$this->presenter->session->getSection('paypal'));
 
-        if ($this->paypal->isError()) {
+		if ($this->paypal->isError()) {
+			$this->onError($this->paypal->errors);
+			return;
+		}
 
-            $this->onError($this->paypal->errors);
-            return;
-        }
+		$this->redirectToPaypal();
+	}
 
-        $this->redirectToPaypal();
-    }
 
+	protected function createComponentPaypalPayForm()
+	{
+		$form = new Form;
 
-    public function handleProcess() {
+		if ($this->translator) {
+			$form->setTranslator($this->translator);
+		}
 
-        $data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
+		$form->addImage('paypalPay', $this->payImage, 'Pay with PayPal');
 
-        $component = $this->getComponent('paypalForm');
-        if ($this->paypal->error) {
+		$form->onSuccess[] = callback($this, 'processPayment');
 
-            foreach ($this->paypal->errors as $error)
-               $component->addError($error); 
+		return $form;
+	}
 
-            return;
-        }
 
-        // Callback
-        $this->onSuccess($data);
-    }
+	public function processPayment(Form $form)
+	{
+		$data = $this->paypal->doPayment(
+			$this->paymentType,
+			$this->presenter->session->getSection('paypal')
+		);
 
+		if ($this->paypal->isError()) {
+			$this->onError($this->paypal->errors);
+			return;
+		}
 
-    public function handleCancel() {
+		// Callback
+		$this->onSuccessPayment($data);
+	}
 
-        $data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
 
-        $component = $this->getComponent('paypalForm');
-        if ($this->paypal->error) {
+	public function handleProcessBuy()
+	{
+		$data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
 
-            foreach ($this->paypal->errors as $error)
-               $component->addError($error); 
+		$component = $this->getComponent('paypalBuyForm');
+		if ($this->paypal->isError()) {
+			foreach ($this->paypal->errors as $error) {
+				$component->addError($error);
+			}
+			return;
+		}
 
-            return;
-        }
+		// Callback
+		$this->onSuccessBuy($data);
+	}
 
-        // Callback
-        $this->onCancel($data);
-    }
 
+	public function handleCancel()
+	{
+		$data = $this->paypal->getShippingDetails($this->presenter->session->getSection('paypal'));
 
-    private function redirectToPaypal() {
+		$component = $this->getComponent('paypalBuyForm');
+		if ($this->paypal->isError()) {
+			foreach ($this->paypal->errors as $error) {
+				$component->addError($error);
+			}
+			return;
+		}
 
-        $url = $this->paypal->url;
-        $this->presenter->redirectUrl($url);
-    }
+		// Callback
+		$this->onCancel($data);
+	}
 
 
-    public function loadState(array $params) {
+	private function redirectToPaypal()
+	{
+		$url = $this->paypal->url;
+		$this->presenter->redirectUrl($url);
+	}
 
-        parent::loadState($params);
 
-    }
+	public function loadState(array $params)
+	{
+		parent::loadState($params);
+	}
 
 
-    private function buildUrl($signal) {
+	private function buildUrl($signal)
+	{
+		$url = $this->presenter->link($this->name . ":${signal}!");
 
-        $url = $this->presenter->link($this->name . ":${signal}!");
+		// Some better way to do it in Nette?
+		return (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $url;
+	}
 
-        // Some better way to do it in Nette?
-        return (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST']. $url;
-    }
 
+	public function setAmount($amount)
+	{
+		$this->amount = $amount;
+		return $this;
+	}
 
-    public function setAmount($amount) {
+	public function setCurrency($currency)
+	{
+		$this->currencyCode = $currency;
+		return $this;
+	}
 
-        $this->amount = $amount;
-        return $this;
-    }
+	public function setPaymentType($type)
+	{
+		$this->paymentType = $type;
+		return $this;
+	}
+}
 
-    public function setCurrency($currency) {
-
-        $this->currencyCode = $currency;
-        return $this;
-    }
-
-    public function setPaymentType($type) {
-
-        $this->paymentType = $type;
-        return $this;
-    }
-
-
-};
