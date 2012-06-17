@@ -19,12 +19,17 @@ common:
     services:
 
     factories:
-        payPalButton:
-            class: \PayPal\PayPalButton
+        buttonInstant:
+            class: \PayPal\ButtonInstant
             setup:
                     - setCredentials(%paypal.api%)
                     - setSandBox(%paypal.sandbox%)
 
+        buttonOrder:
+            class: \PayPal\ButtonOrder
+            setup:
+                    - setCredentials(%paypal.api%)
+                    - setSandBox(%paypal.sandbox%)
 
 production < common:
     parameters:

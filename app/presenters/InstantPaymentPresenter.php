@@ -3,6 +3,7 @@
 use PayPal\PayPalButton,
     PayPal\API;
 
+use Nette\Diagnostics\Debugger;
 
 final class InstantPaymentPresenter extends BasePresenter {
 
@@ -10,7 +11,7 @@ final class InstantPaymentPresenter extends BasePresenter {
 
     public function createComponentPaypalButton() {
 
-        $button = $this->context->createPayPalButton();
+        $button = $this->context->createButtonInstant();
 
         // EURO is default options (see documentation for other currencies)
         //$button->setCurrencyCode(API::CURRENCY_EURO);
@@ -42,12 +43,18 @@ final class InstantPaymentPresenter extends BasePresenter {
 
 	public function processPayment($data) {
 
+        Debugger::firelog('Processing payment ...');
+        Debugger::firelog($data);
+
 		dump($data);
 		exit;
 	}
 
 
     public function errorOccurred($errors) {
+
+        Debugger::firelog('PayPal error occured!');
+        Debugger::firelog($errors);
 
         dump($errors);
         exit(1);
@@ -56,10 +63,11 @@ final class InstantPaymentPresenter extends BasePresenter {
 
     public function processBuy($data) {
 
+        Debugger::firelog('Processing buy ...');
+        Debugger::firelog($data);
+
 		$this->redirect('pay');
 
-        //dump($data);
-        //exit;
 
         /** Gets data:
          * ===========================
@@ -113,15 +121,10 @@ final class InstantPaymentPresenter extends BasePresenter {
     }
 
  
-    public function processOrder($data) {
-
-        // Review payment details
-        dump($data);
-        exit;
-    }
-
-
     public function cancelOrder($data) {
+
+        Debugger::firelog('Order was canceled.');
+        Debugger::firelog($data);
 
         dump($data);
         exit;
