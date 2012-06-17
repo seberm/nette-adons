@@ -2,18 +2,30 @@
 <html>
 <head>
 	<title>{block #title|stripTags|trim}{/block}&nbsp;|&nbsp;PayPal Module Examples</title>
+
+    <link rel="stylesheet" type="text/css" href="{$basePath}/css/front.css">
 </head>
 
 <body>
     <div id="menu">
         <ul>
-            <li><a n:href="InstantPayment:">Express-Checkout Instant Payment</a></li>
-            <li><a n:href="Order:">Express-Checkout Order</a></li>
+            <li><a n:href="Main:">About component</a></li>
+            <li><a n:href="InstantPayment:">Instant Payment</a></li>
+            <li><a n:href="Order:">Order</a></li>
         </ul>
     </div>
 
-	<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
 
-	{include #content}
+    <div id="content">
+        <div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+
+        {include #content}
+    </div>
+
+    <div id="footer">
+        <b>
+            Copyright &copy; 2012 Sabart Otto&nbsp;<a href="mailto:seberm@gmail.com">&lt;seberm@gmail.com&gt;</a>
+        </b>
+    </div>
 </body>
 </html>
