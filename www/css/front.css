@@ -1,0 +1,109 @@
+* {
+    padding:0px;
+    margin:0px;
+}
+
+/*
+input.button.paypal {
+
+    background:transparent url('../images/front/layout/buttons/mindscope.png');
+    border:none;
+    width:236px;
+    height:73px;
+    cursor:hand;
+    cursor:pointer;
+    margin:5px 0;
+}
+*/
+
+/*
+input.button.paymentConfirm {
+
+    background:transparent url('../images/front/layout/buttons/order.png');
+    border:none;
+    width:406px;
+    height:73px;
+    cursor:hand;
+    cursor:pointer;
+    margin:5px 0;
+}
+
+
+input.button.paymentCancel {
+
+    background:transparent url('../images/front/layout/buttons/order.png');
+    border:none;
+    width:406px;
+    height:73px;
+    cursor:hand;
+    cursor:pointer;
+    margin:5px 0;
+}
+
+*/
+
+
+body {
+    background:#1D0C05;
+    color:#ffcd89;
+}
+
+a {
+    color:#ff9600;
+    text-decoration:none;
+}
+
+a:hover {
+    color:#f3f3f3;
+    text-decoration:underline;
+}
+
+h1 {
+    font-size:35px;
+    font-weight:normal;
+}
+
+div#content {
+    margin:40px 0;
+    text-align:center;
+    clear:both;
+}
+
+div#footer {
+    /* ... */
+}
+
+div#menu ul {
+    list-style:none;
+    text-align:center;
+
+    font-size:24px;
+    font-weight:bold;
+    overflow:hidden;
+}
+
+
+div#menu ul li {
+    width:33%;
+    float:left;
+}
+
+.flash.info {
+    color: #008000;
+    background: #C6FFC9;
+}
+
+.flash.warning {
+	color: #FF0000;
+	background: #FFB9B9;
+}
+
+.flash.info, .message.warning {
+	text-align: center;
+	font-weight: bold;
+	font-size: 15px;
+	border: 1px solid #000000;
+	margin: 5px 0;
+	padding: 2px;
+}
+
