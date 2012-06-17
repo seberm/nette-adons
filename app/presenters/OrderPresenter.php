@@ -157,13 +157,13 @@ Nette\ArrayHash(44) {
         $form->addProtection('It\'s neccessary to resend this form. Security token expired.');
 
         $form->addSubmit('confirm', 'Confirm payment');
-        $form->onSuccess[] = callback($this, 'confirmPayment');
+        $form->onSuccess[] = callback($this, 'confirmPaymentFormSubmitted');
 
         return $form;
     }
 
 
-    public function confirmPayment($form) {
+    public function confirmPaymentFormSubmitted($form) {
 
         try {
 
@@ -189,7 +189,16 @@ Nette\ArrayHash(44) {
     /*
     public function createComponentCancelButton() {
 
-        return new Form;
+        $form = new Form;
+        $form->onSuccess[] = callback($this, 'cancelFormSubmitted');
+
+        return $form;
+    }
+
+
+    public function cancelFormSubmitted($form) {
+
+        $this->redirect(':'.$this->name.':');
     }
      */
 }
