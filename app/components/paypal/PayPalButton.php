@@ -71,13 +71,6 @@ abstract class PayPalButton extends Nette\Application\UI\Control
 	}
 
 
-	public function renderPay()
-	{
-		$this->template->setFile(__DIR__ . '/pay.latte')
-			->render();
-	}
-
-
 	public function setCredentials(array $params)
 	{
 		$this->api->setData($params);
@@ -160,6 +153,12 @@ abstract class PayPalButton extends Nette\Application\UI\Control
 		$this->onSuccessBuy($data);
 	}
      */
+
+
+    public function getShippingDetails(Nette\Http\SessionSection $section) {
+
+        return $this->api->getShippingDetails($section);
+    }
 
 
 	protected function redirectToPaypal()

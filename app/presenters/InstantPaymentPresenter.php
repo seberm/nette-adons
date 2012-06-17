@@ -56,6 +56,12 @@ final class InstantPaymentPresenter extends BasePresenter {
         Debugger::firelog('PayPal error occured!');
         Debugger::firelog($errors);
 
+        // It's possible to show errors this way:
+        /*
+        foreach ($errors as $err)
+            $this->orderButton->addError($err);
+        */
+
         dump($errors);
         exit(1);
     }

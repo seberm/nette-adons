@@ -6,8 +6,8 @@
 
 namespace PayPal;
 
-use Nette\Utils\Arrays,
-Nette\Http\Url;
+use \Nette\Utils\Arrays,
+    \Nette\Http\Url;
 
 
 class API extends \Nette\Object
@@ -49,7 +49,8 @@ class API extends \Nette\Object
     private $token;
     //public $invoiceValue = NULL;
     private $errors = array();
-    //private $cart = array();
+
+    private $cart = array();
 
 
 	public function __construct($opts = array())
@@ -97,7 +98,6 @@ class API extends \Nette\Object
     /**
      * Adds new item to PayPals Cart
      */
-    /*
     public function addItem($name, $description, $price, $quantity) {
 
         $this->cart[] = array(
@@ -107,13 +107,11 @@ class API extends \Nette\Object
                                 'L_PAYMENTREQUEST_0_QTY' => $quantity,
                             );
     }
-     */
 
 
     /**
      * Prepares the parameters for the SetExpressCheckout API Call.
      */
-    /*
     public function setExpressCheckout($shipping, $tax, $currencyCodeType, $paymentType, $returnURL, $cancelURL, $ses) { 
 
         $query = array(
@@ -141,7 +139,26 @@ class API extends \Nette\Object
         $query['PAYMENTREQUEST_0_TAXAMT'] = $tax;
         $query['PAYMENTREQUEST_0_SHIPPINGAMT'] = $shipping;
         $query['PAYMENTREQUEST_0_AMT'] = $query['PAYMENTREQUEST_0_ITEMAMT'] + $query['PAYMENTREQUEST_0_TAXAMT'] + $query['PAYMENTREQUEST_0_SHIPPINGAMT'];
-    */
+
+        $resArray = $this->call('SetExpressCheckout', $query);
+        $status = strtoupper($this->value('ACK', $resArray));
+
+        if (strcasecmp($status, 'success') === 0 || strcasecmp($status, 'successwithwarning') === 0) {
+
+            $ses->token = $this->value('TOKEN', $resArray);
+            $ses->paymentType = $paymentType;
+            $ses->currencyCodeType = $currencyCodeType;
+            $ses->amount = $query['PAYMENTREQUEST_0_AMT'];
+
+            $this->token = $ses->token;
+
+        } else {
+
+            $this->err($this->value('L_LONGMESSAGE0', $resArray));
+            return false;
+        }
+    }
+
 
 
 	/**
@@ -162,21 +179,14 @@ class API extends \Nette\Object
 		$resArray = $this->call('SetExpressCheckout', $query);
 
 		$status = strtoupper($this->value('ACK', $resArray));
-    /*
-            $ses->token = $this->value('TOKEN', $resArray);
-            $ses->paymentType = $paymentType;
-            $ses->currencyCodeType = $currencyCodeType;
-            $ses->amount = $query['PAYMENTREQUEST_0_AMT'];
 
-            $this->token = $ses->token;
-        } else {
-     */
 
 		if (strcasecmp($status, 'success') === 0 || strcasecmp($status, 'successwithwarning') === 0) {
 			$ses->token = $this->value('TOKEN', $resArray);
 			$this->token = $ses->token;
-		}
-		else {
+
+		} else {
+
 			$this->err($this->value('L_LONGMESSAGE0', $resArray));
 			return FALSE;
 		}
@@ -188,8 +198,7 @@ class API extends \Nette\Object
     /**
      * Confirmation of paypal payment
      */
-    /*
-    public function confirmExpressCheckout(Nette\Http\SessionSection $ses) { 
+    public function confirmExpressCheckout(\Nette\Http\SessionSection $ses) { 
 
         $query = array('PAYMENTREQUEST_0_AMT' => $ses->amount,
                        'PAYERID' => $ses->payerID,
@@ -214,7 +223,6 @@ class API extends \Nette\Object
            
         return $resArray;
     }
-     */
 
 
 	public function getShippingDetails($ses)
@@ -225,11 +233,12 @@ class API extends \Nette\Object
 		$status = strtoupper($this->value('ACK', $resArray));
 
 		if (strcasecmp($status, 'success') != 0 && strcasecmp($status, 'successwithwarning') != 0) {
+
 			$this->err($this->value('L_LONGMESSAGE0', $resArray));
 			return FALSE;
 		}
     
-        //$ses->payerID = $this->value('PAYERID', $resArray);
+        $ses->payerID = $this->value('PAYERID', $resArray);
 
         return $resArray;
     }
@@ -249,7 +258,7 @@ class API extends \Nette\Object
 			'TOKEN' => $ses->token,
 			'AMT' => $details['AMT'],
 			'CURRENCYCODE' => $details['CURRENCYCODE'],
-			'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly'
+			//'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly'
 		);
 
 		$resArray = $this->call('DoExpressCheckoutPayment', $query);
@@ -272,6 +281,7 @@ class API extends \Nette\Object
 
 	private function call($method, $data)
 	{
+
 		$ch = curl_init($this->endPoint);
 
 		// Set up verbose mode
