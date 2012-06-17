@@ -66,6 +66,12 @@ class PayPalButton extends Nette\Application\UI\Control
 	}
 
 
+    public function getErrors() {
+
+        return $this->api->errors;
+    }
+
+
 	public function renderBuy()
 	{
 		$this->template->setFile(__DIR__ . '/buy.latte')
@@ -205,6 +211,12 @@ class PayPalButton extends Nette\Application\UI\Control
 	}
 
 
+    public function confirmExpressCheckout(Nette\Http\SessionSection $section) {
+
+        return $this->api->confirmExpressCheckout($section);
+    }
+
+
 	public function handleProcessBuy()
 	{
 		$data = $this->api->getShippingDetails($this->presenter->session->getSection('paypal'));
@@ -268,7 +280,7 @@ class PayPalButton extends Nette\Application\UI\Control
 	}
 
 
-	public function setCurrency($currency)
+	public function setCurrencyCode($currency)
 	{
 		$this->currencyCode = $currency;
 		return $this;

@@ -189,7 +189,7 @@ class API extends \Nette\Object
      * Confirmation of paypal payment
      */
     /*
-    public function confirmExpressCheckout($ses) { 
+    public function confirmExpressCheckout(Nette\Http\SessionSection $ses) { 
 
         $query = array('PAYMENTREQUEST_0_AMT' => $ses->amount,
                        'PAYERID' => $ses->payerID,

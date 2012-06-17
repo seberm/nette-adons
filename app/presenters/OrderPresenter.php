@@ -9,17 +9,19 @@ use \Nette\Application\UI\Form,
 
 final class OrderPresenter extends BasePresenter {
 
+    private $orderButton = NULL;
+
 
     protected function startup() {
 
         parent::startup();
-        $this->button = $this->context->createPayPalButton();
+        $this->orderButton = $this->context->createPayPalButton();
     }
 
 
     public function createComponentPaypalButton() {
 
-        $button = $this->button;
+        $button = $this->orderButton;
 
         $button->setCurrencyCode(API::CURRENCY_CROUND);
 
@@ -167,12 +169,12 @@ Nette\ArrayHash(44) {
 
         try {
 
-            if ($data = $this->button->api->confirmExpressCheckout($this->presenter->session->getSection('paypal'))) {
+            if ($data = $this->button->confirmExpressCheckout($this->presenter->session->getSection('paypal'))) {
                 
                 $this->flashMessage('Transaction was successful.');
             } else {
 
-                foreach ($this->button->api->errors as $error)
+                foreach ($this->button->errors as $error)
                     $this->flashMessage($error, 'warning');
             }
 
