@@ -15,6 +15,9 @@ class ButtonOrder extends PayPalButton
     public $shipping = 0.0;
     public $tax = 0.0;
 
+    // Handlers
+    public $onConfirmation;
+
 
 	public function __construct(Nette\ComponentModel\IContainer $parent = NULL, $name = NULL)
 	{
@@ -91,20 +94,25 @@ class ButtonOrder extends PayPalButton
 		}
 
 		// Callback
-		$this->onSuccessPayment($data);
+		$this->onSuccessBuy($data);
 	}
 
 
     public function confirmExpressCheckout(Nette\Http\SessionSection $section) {
 
-        $data = $this->api->confirmExpressCheckout($section);
+        // We have to get data before confirmation!
+        // It's because the PayPal token is after confirmation invalid
+        $data = $this->api->getShippingDetails($section);
 
-        if ($this->api->err) {
+        $this->api->confirmExpressCheckout($section);
+
+        if ($this->api->error) {
             $this->onError($this->api->errors);
 			return;
         }
 
-        $this->onSuccessBuy($data);
+        // Callback
+        $this->onSuccessPayment($data);
     }
 
 

@@ -54,6 +54,47 @@ final class OrderPresenter extends BasePresenter {
 
 	public function processPayment($data) {
 
+        /** HERE **
+         * ========
+         * Here you can save details about user to the database ...
+         *
+         * For example:
+         * $dbData = array(
+         *                  'payerID => $data['PAYERID'],
+         *                  'firstName => $data['FIRSTNAME'],
+         *                  'lastName => $data['LASTNAME'],
+         *                  'email' => $data['EMAIL'],
+         *                );
+         *
+         * $user = $this->context->model->createUser($dbData);
+         * if (!$user)
+         *      $this->flashMessage('Err ...');
+         *
+         * ...
+         * ..
+         * .
+         *
+         * And send him email with information about order:
+         * $temp = $this->createTemplate();
+         * $temp->setFile('...../emailBody.phtml')
+         *      ->registerFilter(new Nette\Latte\Engine);
+         *
+         * $temp->details = $data;
+         *
+         * $msg = new Message;
+         * $msg->setHtmlBody($temp);
+         *
+         * $msg->from = 'Robot <robot@foo.tld>';
+         * $msg->subject = 'New order';
+         * $msg->send;
+         * ...
+         * ..
+         * .
+         *
+         * $this->flashMessage('Transaction was successful.');
+         * $this->redirect('Somewhere:');
+         */
+
         Debugger::firelog('Processing payment ...');
         Debugger::firelog($data);
 
@@ -184,19 +225,13 @@ final class OrderPresenter extends BasePresenter {
 
         try {
 
-            if ($data = $this->orderButton->confirmExpressCheckout($this->presenter->session->getSection('paypal'))) {
-                
-                $this->flashMessage('Transaction was successful.');
-            } else {
+            $this->orderButton->confirmExpressCheckout($this->presenter->session->getSection('paypal'));
 
-                foreach ($this->orderButton->errors as $error)
-                    $this->flashMessage($error, 'warning');
-            }
-
+            //$this->redirect('Order:');
 
         } catch (AuthenticationException $e) {
 
-            $form->addError($e->getMessage());
+            $form->addError($e->message);
         }
 
     }
