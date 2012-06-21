@@ -6,9 +6,11 @@
 use Nette\Application\Routers\Route,
     Nette\Diagnostics\Debugger;
 
+// Load composer libs
+require LIBS_DIR . '/autoload.php';
 
-// Load Nette Framework
-require LIBS_DIR . '/Nette/loader.php';
+// Boot Nette Framework 
+require LIBS_DIR . '/nette/nette/Nette/loader.php';
 
 
 // Configure application

@@ -1,0 +1,20 @@
+{
+    "name": "PayPal Component for Nette 2.0",
+    "description": "Component for various PayPal payments",
+    "version": "0.0.3",
+    "authors": [
+        {"name": "Otto Šabart", "email": "seberm@gmail.com"}
+    ],
+
+    "require": {
+
+        "php" : ">=5.3.2",
+        "nette/nette": "2.0.*"
+    },
+
+    "autoload": {
+
+        "psr-0": {"PayPal" : "/libs"}
+    }
+
+}

@@ -35,6 +35,10 @@ Session.vim
 # PhpEd
 *.ppj
 
+# Composer files
+composer.lock
+vendor/
+
 ### Application ###
 temp/*
 !/temp/.htaccess
@@ -43,3 +47,4 @@ temp/*
 /log/*
 !/log/.htaccess
 !/log/web.config
+
