@@ -210,7 +210,8 @@ final class OrderPresenter extends BasePresenter {
 
         $form = new Form;
 
-        //$form->setTranslator($this->context->translator);
+        if ($this->context->hasServie('translator'))
+            $form->setTranslator($this->context->translator);
 
         $form->addProtection('It\'s neccessary to resend this form. Security token expired.');
 
@@ -231,7 +232,7 @@ final class OrderPresenter extends BasePresenter {
 
         } catch (AuthenticationException $e) {
 
-            $form->addError($e->message);
+            $form->addError($e->getMessage());
         }
 
     }
