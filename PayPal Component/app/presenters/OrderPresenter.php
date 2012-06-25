@@ -198,11 +198,12 @@ final class OrderPresenter extends BasePresenter {
 
     public function renderConfirm() {
 
-        $data = $this->orderButton->getShippingDetails($this->presenter->session->getSection('paypal'));
+        $response = $this->orderButton->getShippingDetails($this->presenter->session->getSection('paypal'));
 
-        $this->template->details = $data;
+        $this->template->data = $response->responseData;
+        $this->template->cartItems = $response->cartItems;
 
-        Debugger::firelog($data);
+        Debugger::firelog($response);
     }
 
 

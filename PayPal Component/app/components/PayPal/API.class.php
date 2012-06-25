@@ -6,11 +6,15 @@
 
 namespace PayPal;
 
-use \Nette\Utils\Arrays,
-    \Nette\Http\Url;
+use PayPal\Response;
+
+use \Nette;
+use Nette\Utils\Arrays,
+    Nette\Object,
+    Nette\Http\Url;
 
 
-class API extends \Nette\Object
+class API extends Object
 {
 
     /**
@@ -30,6 +34,8 @@ class API extends \Nette\Object
     const CURRENCY_CROUND = 'CZK';
     const CURRENCY_EURO = 'EUR';
 
+    /** @deprecated */
+    private $cart = array();
 
     // Options
     private $data = array(
@@ -48,17 +54,11 @@ class API extends \Nette\Object
 
     private $token;
     //public $invoiceValue = NULL;
-    private $errors = array();
 
-    private $cart = array();
+    public function __construct($opts = array()) {
 
-
-    public function __construct($opts = array())
-    {
-
-        if (count($opts)) {
+        if (count($opts))
             $this->setData($opts);
-        }
     }
 
 
@@ -140,23 +140,20 @@ class API extends \Nette\Object
         $query['PAYMENTREQUEST_0_SHIPPINGAMT'] = $shipping;
         $query['PAYMENTREQUEST_0_AMT'] = $query['PAYMENTREQUEST_0_ITEMAMT'] + $query['PAYMENTREQUEST_0_TAXAMT'] + $query['PAYMENTREQUEST_0_SHIPPINGAMT'];
 
-        $resArray = $this->call('SetExpressCheckout', $query);
-        $status = strtoupper($this->value('ACK', $resArray));
+        $response = $this->call('SetExpressCheckout', $query);
 
-        if (strcasecmp($status, 'success') === 0 || strcasecmp($status, 'successwithwarning') === 0) {
+        if ($response->success) {
 
-            $ses->token = $this->value('TOKEN', $resArray);
+            $ses->token = $response->token;
             $ses->paymentType = $paymentType;
             $ses->currencyCodeType = $currencyCodeType;
             $ses->amount = $query['PAYMENTREQUEST_0_AMT'];
 
             $this->token = $ses->token;
 
-        } else {
+        } 
 
-            $this->err($this->value('L_LONGMESSAGE0', $resArray));
-            return false;
-        }
+        return $response;
     }
 
 
@@ -176,22 +173,18 @@ class API extends \Nette\Object
             'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
         );
 
-        $resArray = $this->call('SetExpressCheckout', $query);
+        $response = $this->call('SetExpressCheckout', $query);
 
-        $status = strtoupper($this->value('ACK', $resArray));
-
-
-        if (strcasecmp($status, 'success') === 0 || strcasecmp($status, 'successwithwarning') === 0) {
-            $ses->token = $this->value('TOKEN', $resArray);
+        if ($response->success) {
+            $ses->token = $response->token;
             $this->token = $ses->token;
 
         } else {
 
-            $this->err($this->value('L_LONGMESSAGE0', $resArray));
             return FALSE;
         }
 
-        return $resArray;
+        return $response;
     }
 
 
@@ -208,20 +201,14 @@ class API extends \Nette\Object
                        'IPADDRESS' => urlencode($_SERVER['SERVER_NAME']),
                      );
 
-        $resArray = $this->call('DoExpressCheckoutPayment', $query);
+        $response = $this->call('DoExpressCheckoutPayment', $query);
 
-        $status = strtoupper($this->value('ACK', $resArray));
-
-        if (strcasecmp($status, 'success') === 0 || strcasecmp($status, 'successwithwarning') === 0) {
-
+        if ($response->success)
             $ses->remove();
-        } else {
-
-            $this->err($this->value('L_LONGMESSAGE0', $resArray));
+        else
             return false;
-        }
            
-        return $resArray;
+        return $response;
     }
 
 
@@ -229,18 +216,14 @@ class API extends \Nette\Object
     {
         $query = array('TOKEN' => $ses->token);
 
-        $resArray = $this->call('GetExpressCheckoutDetails', $query);
-        $status = strtoupper($this->value('ACK', $resArray));
+        $response = $this->call('GetExpressCheckoutDetails', $query);
 
-        if (strcasecmp($status, 'success') != 0 && strcasecmp($status, 'successwithwarning') != 0) {
+        if ($response->success)
+            $ses->payerID = $response->payerID;
+        else
+            return false;
 
-            $this->err($this->value('L_LONGMESSAGE0', $resArray));
-            return FALSE;
-        }
-    
-        $ses->payerID = $this->value('PAYERID', $resArray);
-
-        return $resArray;
+        return $response;
     }
     
 
@@ -248,9 +231,8 @@ class API extends \Nette\Object
     {
         $details = $this->getShippingDetails($ses);
 
-        if (!$details) {
-            return FALSE;
-        }
+        if (!$details)
+            return false;
 
         $query = array(
             'PAYMENTACTION' => $paymentType,
@@ -261,15 +243,12 @@ class API extends \Nette\Object
             //'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly'
         );
 
-        $resArray = $this->call('DoExpressCheckoutPayment', $query);
-        $status = strtoupper($this->value('ACK', $resArray));
+        $response = $this->call('DoExpressCheckoutPayment', $query);
 
-        if (strcasecmp($status, 'success') != 0 && strcasecmp($status, 'successwithwarning') != 0) {
-            $this->err($this->value('L_LONGMESSAGE0', $resArray));
-            return FALSE;
-        }
+        if ($response->error)
+            return false;
 
-        return $resArray;
+        return $response;
     }
 
 
@@ -318,7 +297,7 @@ class API extends \Nette\Object
 
         curl_close($ch);
 
-        return $this->deformatQuery($response);
+        return new Response($this->deformatQuery($response));
     }
 
 
@@ -344,7 +323,7 @@ class API extends \Nette\Object
     public function deformatQuery($query)
     {
         parse_str($query, $data);
-        return \Nette\ArrayHash::from($data);
+        return $data;
     }
 
 
@@ -368,22 +347,6 @@ class API extends \Nette\Object
         //$data[$key] = urlencode($value);
 
         return http_build_query($resData, '', '&');
-    }
-
-
-    /**
-     * If some error, true is returned.
-     * @return bool
-     */
-    public function isError()
-    {
-        return (bool)count($this->errors);
-    }
-
-
-    public function getErrors()
-    {
-        return $this->errors;
     }
 
 
@@ -454,14 +417,9 @@ class API extends \Nette\Object
     }
 
 
-    private function err($message)
+    private function value($key, /*\Nette\ArrayHash */$arr)
     {
-        $this->errors[] = $message;
-    }
-
-
-    private function value($key, \Nette\ArrayHash $arr)
-    {
-        return $arr->offsetExists($key) ? $arr->offsetGet($key) : '';
+        //return $arr->offsetExists($key) ? $arr->offsetGet($key) : '';
+return array_key_exists($key, $arr) ? $arr[$key] : '';
     }
 }

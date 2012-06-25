@@ -46,7 +46,7 @@ class ButtonOrder extends PayPalButton
 	public function initPayment(Form $paypalBuyForm)
 	{
 
-        $this->api->setExpressCheckout($this->shipping,
+        $response = $this->api->setExpressCheckout($this->shipping,
                                        $this->tax,
                                        $this->currencyCode,
                                        $this->paymentType,
@@ -54,8 +54,8 @@ class ButtonOrder extends PayPalButton
                                        $this->buildUrl('cancel'),
                                        $this->presenter->session->getSection('paypal'));
 
-		if ($this->api->error) {
-			$this->onError($this->api->errors);
+		if ($response->error) {
+			$this->onError($response->errors);
 			return;
 		}
 
@@ -67,16 +67,16 @@ class ButtonOrder extends PayPalButton
     // Gets shipping information and wait for payment confirmation
     public function handleConfirmation() {
 
-        $data = $this->api->getShippingDetails($this->presenter->session->getSection('paypal'));
+        $response = $this->api->getShippingDetails($this->presenter->session->getSection('paypal'));
 
-        if ($this->api->error) {
+        if ($response->error) {
 
-            $this->onError($this->api->errors);
+            $this->onError($response->errors);
             return;
         }
 
         // Callback
-        $this->onConfirmation($data);
+        $this->onConfirmation($response);
     }
 
 

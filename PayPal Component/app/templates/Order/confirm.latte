@@ -8,27 +8,47 @@
 
 {* Dump PayPal data to our Nette debug bar *}
 
-{dump $details}
+{dump $data}
 
+<h2>Order basic information</h2>
 <table border="1" cellspacing="0" cellpadding="0">
 <tr>
     <td>Token is:</td>
-    <td>{$details->TOKEN}</td>
+    <td>{$data->token}</td>
 </tr>
 <tr>
     <td>Payer ID:</td>
-    <td>{$details->PAYERID}</td>
+    <td>{$data->payerID}</td>
 </tr>
 <tr>
     <td>Payer status:</td>
-    <td>{$details->PAYERSTATUS}</td>
+    <td>{$data->payerStatus}</td>
 </tr>
 <tr>
     <td>Price:</td>
-    <td>{$details->PAYMENTREQUEST_0_AMT} {$details->PAYMENTREQUEST_0_CURRENCYCODE}</td>
+    <td>{$data->amount} {$data->currencyCode}</td>
 </tr>
 </table>
 
+
+<h2>Cart items</h2>
+<table border="1" cellspacing="0" cellpadding="0">
+<tr>
+    <th>Name</th>
+    <th>Quantity</th>
+    <th>Amount</th>
+    <th>Description</th>
+    {* ... *}
+</tr>
+{foreach $cartItems as $item}
+<tr>
+    <td>{$item->name}</td>
+    <td>{$item->quantity}</td>
+    <td>{$item->amount}</td>
+    <td>{$item->description|truncate:30}</td>
+</tr>
+{/foreach}
+</table>
 
 {control cancelButton}
 {control confirmButton}
