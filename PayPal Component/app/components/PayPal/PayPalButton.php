@@ -202,4 +202,72 @@ abstract class PayPalButton extends Nette\Application\UI\Control
 		return $this;
 	}
 
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Pocet polozek (hodnot), ktere ma jedna PayPal polozka
+    const ITEM_VALUES_COUNT = 9;
+    public static function parsePayPalItems() {
+        $testData = array (
+                           'L_NAME0' => "Item1",
+                           'L_NAME1' => "Item2",
+                           'L_QTY0' => "1",
+                           'L_QTY1' => "1",
+                           'L_TAXAMT0' => "0.00",
+                           'L_TAXAMT1' => "0.00",
+                           'L_AMT0' => "12.30",
+                           'L_AMT1' => "10.80",
+                           'L_DESC0' => "This is item one!",
+                           'L_DESC1' => "Item 2 - Yeah ...",
+                           'L_ITEMWEIGHTVALUE0' => "   0.00000",
+                           'L_ITEMWEIGHTVALUE1' => "   0.00000",
+                           'L_ITEMLENGTHVALUE0' => "   0.00000",
+                           'L_ITEMLENGTHVALUE1' => "   0.00000",
+                           'L_ITEMWIDTHVALUE0' => "   0.00000" ,
+                           'L_ITEMWIDTHVALUE1' => "   0.00000" ,
+                           'L_ITEMHEIGHTVALUE0' => "   0.00000",
+                           'L_ITEMHEIGHTVALUE1' => "   0.00000",
+                        );
+
+        $items = array();
+        $itemsCount = count($testData % self::ITEM_VALUES_COUNT); // This constant is MAGIC!
+        for ($j = 0; $j < $itemsCount; ++$j) {
+            for ($i = 0; $i < self::ITEM_VALUES_COUNT; ++$i) {
+
+                if (isset($testData['L_NAME'.$i]) && isset ($testData['L_QTY'.$i])) { // ...a tak dale..musi se otestovat jestli tam jsou vsechny ( multikey array test keys)
+                    $items[] = array(
+                        'name' => $testData['L_NAME'.$i],
+                        'quantity' => $testData['L_QTY'.$i],
+                        'taxAmount' => $testData['L_TAXAMT'.$i],
+                        'amount' => $testData['L_AMT'.$i],
+                        'description' => $testData['L_DESC'.$i],
+                        'weightValue' => $testData['L_ITEMWEIGHTVALUE'.$i],
+                        'lengthValue' => $testData['L_ITEMLENGTHVALUE'.$i],
+                        'widthValue' => $testData['L_ITEMWIDTHVALUE'.$i],
+                        'heightValue' => $testData['L_ITEMHEIGHTVALUE'.$i],
+                    );
+
+                }
+            }
+        }
+
+        dump($items);
+        exit;
+        return \Nette\ArrayHash::from($items);
+    }
+
 };
