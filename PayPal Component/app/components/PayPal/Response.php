@@ -83,7 +83,8 @@ class Response extends Object {
 
     public function __construct($data) {
 
-        $this->responseData = Utils::translateKeys($data, $this->translationTable);
+        $formattedData = $this->deformatNVP($data);
+        $this->responseData = Utils::translateKeys($formattedData, $this->translationTable);
     }
 
 
@@ -100,41 +101,6 @@ class Response extends Object {
         $this->responseData = $arr;
     }
 
-
-    /**
-     * Finds out if all keys in $keys are included in $arr.
-     *
-     * @param $arr Source array
-     * @param $keys Array of keys
-     * @return boolean
-     */
-    public function array_keys_exist($arr, $keys) {
-
-        if (count(array_intersect($keys, array_keys($arr))) == count($keys))
-            return true;
-
-        return false;
-    }
-
-
-    /**
-     * Returns subarray from array.
-     * New array is created only from keys which matches the reqular expression.
-     *
-     * @param $arr Source array
-     * @param $pattern Regular expression
-     * @return array Subarray
-     */
-    public function array_keys_by_ereg($arr, $pattern) {
-
-        $subArray = array();
-
-        $matches = preg_grep($pattern, array_keys($arr));
-        foreach ($matches as $match)
-            $subArray[$match] = $arr[$match];
-
-        return $subArray;
-    }
 
 
 
@@ -164,7 +130,7 @@ class Response extends Object {
 
         $pattern = '/^' .$patternKeys. '[0-9]+$/';
 
-        $itemsData = $this->array_keys_by_ereg($this->responseData, $pattern);
+        $itemsData = Utils::array_keys_by_ereg($this->responseData, $pattern);
 
         if (empty($itemsData))
             return false;
@@ -180,7 +146,7 @@ class Response extends Object {
             foreach ($this->CART_ITEM_KEYS as $key)
                 $keys[] = $key . $i;
 
-            if ($this->array_keys_exist($itemsData, $keys)) {
+            if (Utils::array_keys_exist($itemsData, $keys)) {
 
                 $items[] = array(
                     'name'          => $itemsData['l_name'            .$i],
@@ -222,7 +188,7 @@ class Response extends Object {
 
     public function getErrors() {
 
-        return $this->array_keys_by_ereg($this->responseData, '/^l_longmessage[0-9]+/');
+        return array_values(Utils::array_keys_by_ereg($this->responseData, '/^l_longmessage[0-9]+/'));
     }
 
 
@@ -241,4 +207,10 @@ class Response extends Object {
         $this->errors[] = $message;
     }
 
+
+    private function deformatNVP($query) {
+
+        parse_str($query, $data);
+        return $data;
+    }
 }

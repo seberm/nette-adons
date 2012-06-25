@@ -124,33 +124,32 @@ class API extends Object
 
         $request = new Request($data);
 
+        /** @todo It's neccessary to solve quantity! */
         $id = 0;
-        $itemsPrice = 0;
         foreach ($this->cart as $item) {
-            foreach ($item as $key => $val) {
-
-                if ($key == 'L_PAYMENTREQUEST_0_AMT')
-                    $itemsPrice += $val;
-
-                $query[$key.$id] = $val;
-            }
+            foreach ($item as $key => $val)
+                $request->addQuery(array($key.$id => $val));
 
             $id++;
         }
 
-        $query['amount'] = $itemsPrice;
-        $query['PAYMENTREQUEST_0_TAXAMT'] = $tax;
-        $query['PAYMENTREQUEST_0_SHIPPINGAMT'] = $shipping;
-        $query['PAYMENTREQUEST_0_AMT'] = $query['PAYMENTREQUEST_0_ITEMAMT'] + $query['PAYMENTREQUEST_0_TAXAMT'] + $query['PAYMENTREQUEST_0_SHIPPINGAMT'];
+        $request->addQuery(array(
+            'itemsAmount' => $request->query->itemsAmount,
+            'taxAmount' => $tax,
+            'shippingAmount' => $shipping,
+        ));
 
-        $response = $this->call('SetExpressCheckout', $query);
+        $request->addQuery(array('amount' => $request->query->amount));
+        $request->setMethod('SetExpressCheckout');
+
+        $response = $this->call($request);
 
         if ($response->success) {
 
             $ses->token = $response->token;
             $ses->paymentType = $paymentType;
             $ses->currencyCodeType = $currencyCodeType;
-            $ses->amount = $query['PAYMENTREQUEST_0_AMT'];
+            $ses->amount = $request->query->amount;
 
             $this->token = $ses->token;
 
@@ -224,8 +223,8 @@ class API extends Object
     }
     
 
-    public function doPayment($paymentType, $ses)
-    {
+    public function doPayment($paymentType, $ses) {
+
         $details = $this->getShippingDetails($ses);
 
         if (!$details)
@@ -244,44 +243,46 @@ class API extends Object
     }
 
 
-    public function getEndPoint()
-    {
+    public function getEndPoint() {
+
         return $this->sandbox ? self::SANDBOX_END_POINT : self::END_POINT;
     }
 
 
-    private function call($method, $data)
-    {
+    private function call($request) {
 
         $ch = curl_init($this->endPoint);
 
         // Set up verbose mode
-        curl_setopt($ch, CURLOPT_VERBOSE, TRUE);
+        curl_setopt($ch, CURLOPT_VERBOSE, true);
 
         //turning off the server and peer verification(TrustManager Concept).
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
         // We should check if paypal has valid certificate
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, TRUE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, true);
 
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         // Just do normal POST
-        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_POST, true);
 
         if ($this->useProxy) {
             curl_setopt($ch, CURLOPT_PROXY, $this->proxyHost . ':' . $this->proxyPort);
         }
 
-        // NVP Request
-        $resData = array_merge($data, array('METHOD' => $method));
-        $request = $this->buildQuery($resData);
+        $request->addQuery(array(
+                            'version' => self::VERSION,
+                            'pwd' => $this->password,
+                            'user' => $this->username,
+                            'signature' => $this->signature,
+                    ));
 
         // POST data
         curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
 
         // Execute
-        $response = curl_exec($ch);
+        $responseNVP = curl_exec($ch);
 
         if (curl_errno($ch)) {
             $this->err(curl_error($ch));
@@ -289,7 +290,7 @@ class API extends Object
 
         curl_close($ch);
 
-        return new Response($this->deformatQuery($response));
+        return new Response($responseNVP);
     }
 
 
@@ -312,34 +313,6 @@ class API extends Object
     }
 
 
-    public function deformatQuery($query)
-    {
-        parse_str($query, $data);
-        return $data;
-    }
-
-
-    /**
-     * Builds basic query to paypal.
-     * @var array $data
-     * @return string query
-     */
-    public function buildQuery(array $data)
-    {
-        $controlData = array(
-            'VERSION' => self::VERSION,
-            'PWD' => $this->password,
-            'USER' => $this->username,
-            'SIGNATURE' => $this->signature,
-        );
-
-        $resData = array_merge($data, $controlData);
-
-        //foreach ($data as $key => $value)
-        //$data[$key] = urlencode($value);
-
-        return http_build_query($resData, '', '&');
-    }
 
 
     public function setSignature($signature)

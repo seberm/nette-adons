@@ -27,6 +27,7 @@ class Query extends Object {
            'taxAmount' => 'PAYMENTREQUEST_0_TAXAMT',
            'shippingAmount' => 'PAYMENTREQUEST_0_SHIPPINGAMT',
            'amount' => 'PAYMENTREQUEST_0_AMT',
+           'password' => 'PWD',
     );
 
 
@@ -42,13 +43,33 @@ class Query extends Object {
     }
 
 
-    public function getData($key = NULL) {
+    public function getData($key = NULL, $default = NULL) {
 
         if (func_num_args() === 0)
             return ArrayHash::from($this->query);
 
         if ($this->has($key))
             return $this->query[$key];
+
+        return $default;
+    }
+
+
+    public function getItemsAmount() {
+
+        $prices = Utils::array_keys_by_ereg($this->query, '/^L_PAYMENTREQUEST_0_AMT[0-9]+$/');
+
+        $itemsAmount = 0.0;
+        foreach ($prices as $price)
+            $itemsAmount += (float) $price;
+
+        return $itemsAmount;
+    }
+
+
+    public function getAmount() {
+
+        return $this->itemsAmount + $this->getData('taxAmount') + $this->getData('shippingAmount');
     }
 
 
@@ -66,5 +87,22 @@ class Query extends Object {
     }
 
 
-    public function 
+    /**
+     * Builds basic query to paypal.
+     * @return string query
+     */
+    public function build() {
+
+        //foreach ($data as $key => $value)
+            //$data[$key] = urlencode($value);
+
+        return http_build_query(Utils::translateKeys($this->query, $this->translationTable, 'strtoupper'), '', '&');
+    }
+
+
+    public function __toString() {
+
+        return $this->build();
+    }
+
 }

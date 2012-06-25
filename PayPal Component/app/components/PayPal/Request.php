@@ -56,5 +56,23 @@ class Request extends Object {
     public function addQuery($query) {
 
         $this->query->appendQuery((array) $query);
+
+        return $this;
+    }
+
+
+    public function setMethod($method) {
+
+        $this->addQuery(array(
+            'method' => $method,
+        ));
+
+        return $this;
+    }
+
+
+    public function __toString() {
+
+        return $this->query;
     }
 }
