@@ -42,7 +42,7 @@ final class OrderPresenter extends BasePresenter {
 
         // If order success, call processOrder function
         $button->onConfirmation[] = callback($this, 'confirmOrder');
-        $button->onSuccessBuy[] = callback($this, 'processBuy');
+        //$button->onSuccessBuy[] = callback($this, 'processBuy');
 		$button->onSuccessPayment[] = callback($this, 'processPayment');
 
         $button->onCancel[] = callback($this, 'cancelOrder');
@@ -124,8 +124,8 @@ final class OrderPresenter extends BasePresenter {
         Debugger::firelog('Processing buy ...');
         Debugger::firelog($data);
 
-		$this->redirect('pay');
-
+        dump($data);
+        exit;
 
         /** Gets data:
          * ===========================
@@ -210,7 +210,7 @@ final class OrderPresenter extends BasePresenter {
 
         $form = new Form;
 
-        if ($this->context->hasServie('translator'))
+        if ($this->context->hasService('translator'))
             $form->setTranslator($this->context->translator);
 
         $form->addProtection('It\'s neccessary to resend this form. Security token expired.');

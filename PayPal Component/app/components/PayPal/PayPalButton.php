@@ -32,7 +32,6 @@ abstract class PayPalButton extends Nette\Application\UI\Control
 	protected $translator = NULL;
 
     // Handlers
-	public $onSuccessBuy;
 	public $onSuccessPayment;
 	public $onCancel;
 	public $onError;

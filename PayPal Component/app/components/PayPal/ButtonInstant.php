@@ -12,6 +12,8 @@ use Nette,
 class ButtonInstant extends PayPalButton
 {
 
+    public $onSuccessBuy;
+
 	public $payImage = 'https://www.paypalobjects.com/en_US/i/btn/x-click-but3.gif';
 
 

@@ -80,6 +80,7 @@ class ButtonOrder extends PayPalButton
     }
 
 
+    /*
 	public function processPayment(Form $form)
 	{
 		$data = $this->api->doPayment(
@@ -96,6 +97,7 @@ class ButtonOrder extends PayPalButton
 		// Callback
 		$this->onSuccessBuy($data);
 	}
+     */
 
 
     public function confirmExpressCheckout(Nette\Http\SessionSection $section) {
@@ -116,6 +118,7 @@ class ButtonOrder extends PayPalButton
     }
 
 
+    /*
 	public function handleProcessBuy()
 	{
 		$data = $this->api->getShippingDetails($this->presenter->session->getSection('paypal'));
@@ -128,6 +131,7 @@ class ButtonOrder extends PayPalButton
 		// Callback
 		$this->onSuccessBuy($data);
 	}
+    */
 
 
 	public function handleCancel()
