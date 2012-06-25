@@ -213,60 +213,103 @@ abstract class PayPalButton extends Nette\Application\UI\Control
 
 
 
+    /**
+     * Finds out if all keys in $keys are included in $arr.
+     *
+     * @param $arr Source array
+     * @param $keys Array of keys
+     * @return boolean
+     */
+    public static function array_keys_exist($arr, $keys) {
+
+        /*
+        foreach ($keys as $key)
+            if (!array_key_exists($key, $arr))
+                return $key;
+
+        return true;
+        */
+
+        if (count(array_intersect($keys, array_keys($arr))) == count($keys))
+            return true;
+
+        return false;
+    }
 
 
+    /**
+     * Returns subarray from array.
+     * New array is created only from keys which matches the reqular expression.
+     *
+     * @param $arr Source array
+     * @param $pattern Regular expression
+     * @return array Subarray
+     */
+    public static function array_keys_by_ereg($arr, $pattern) {
 
+        $subArray = array();
 
+        $matches = preg_grep($pattern, array_keys($arr));
+        foreach ($matches as $match)
+            $subArray[$match] = $arr[$match];
+
+        return $subArray;
+    }
 
 
     // Pocet polozek (hodnot), ktere ma jedna PayPal polozka
     const ITEM_VALUES_COUNT = 9;
-    public static function parsePayPalItems() {
-        $testData = array (
-                           'L_NAME0' => "Item1",
-                           'L_NAME1' => "Item2",
-                           'L_QTY0' => "1",
-                           'L_QTY1' => "1",
-                           'L_TAXAMT0' => "0.00",
-                           'L_TAXAMT1' => "0.00",
-                           'L_AMT0' => "12.30",
-                           'L_AMT1' => "10.80",
-                           'L_DESC0' => "This is item one!",
-                           'L_DESC1' => "Item 2 - Yeah ...",
-                           'L_ITEMWEIGHTVALUE0' => "   0.00000",
-                           'L_ITEMWEIGHTVALUE1' => "   0.00000",
-                           'L_ITEMLENGTHVALUE0' => "   0.00000",
-                           'L_ITEMLENGTHVALUE1' => "   0.00000",
-                           'L_ITEMWIDTHVALUE0' => "   0.00000" ,
-                           'L_ITEMWIDTHVALUE1' => "   0.00000" ,
-                           'L_ITEMHEIGHTVALUE0' => "   0.00000",
-                           'L_ITEMHEIGHTVALUE1' => "   0.00000",
-                        );
+            // We have to check if all these keys exist in array 
+    public static $ITEM_KEYS = array(
+                'L_NAME',
+                'L_QTY',
+                'L_TAXAMT',
+                'L_AMT',
+                'L_DESC',
+                'L_ITEMWEIGHTVALUE',
+                'L_ITEMLENGTHVALUE',
+                'L_ITEMWIDTHVALUE',
+                'L_ITEMHEIGHTVALUE',
+            );
+
+    /**
+     * Returns PayPal's cart items in Nette\ArrayHash.
+     *
+     * @param $data Data from PayPal response
+     * @return Nette\ArrayHash
+     */
+    public static function parsePayPalItems($data) {
+
+        $itemsData = self::array_keys_by_ereg($data, '/^L_[A-Z]+[0-9]+/');
 
         $items = array();
-        $itemsCount = count($testData % self::ITEM_VALUES_COUNT); // This constant is MAGIC!
-        for ($j = 0; $j < $itemsCount; ++$j) {
-            for ($i = 0; $i < self::ITEM_VALUES_COUNT; ++$i) {
+        $itemsCount = count($itemsData) / count(self::$ITEM_KEYS);
 
-                if (isset($testData['L_NAME'.$i]) && isset ($testData['L_QTY'.$i])) { // ...a tak dale..musi se otestovat jestli tam jsou vsechny ( multikey array test keys)
-                    $items[] = array(
-                        'name' => $testData['L_NAME'.$i],
-                        'quantity' => $testData['L_QTY'.$i],
-                        'taxAmount' => $testData['L_TAXAMT'.$i],
-                        'amount' => $testData['L_AMT'.$i],
-                        'description' => $testData['L_DESC'.$i],
-                        'weightValue' => $testData['L_ITEMWEIGHTVALUE'.$i],
-                        'lengthValue' => $testData['L_ITEMLENGTHVALUE'.$i],
-                        'widthValue' => $testData['L_ITEMWIDTHVALUE'.$i],
-                        'heightValue' => $testData['L_ITEMHEIGHTVALUE'.$i],
-                    );
+        assert(is_int($itemsCount));
 
-                }
+
+        for ($i = 0; $i < $itemsCount; ++$i) {
+
+            $keys = array();
+            foreach (self::$ITEM_KEYS as $key)
+                $keys[] = $key . $i;
+
+            if (self::array_keys_exist($itemsData, $keys)) {
+
+                $items[] = array(
+                    'name'          => $itemsData['L_NAME'.$i],
+                    'quantity'      => $itemsData['L_QTY'.$i],
+                    'taxAmount'     => $itemsData['L_TAXAMT'.$i],
+                    'amount'        => $itemsData['L_AMT'.$i],
+                    'description'   => $itemsData['L_DESC'.$i],
+                    'weightValue'   => $itemsData['L_ITEMWEIGHTVALUE'.$i],
+                    'lengthValue'   => $itemsData['L_ITEMLENGTHVALUE'.$i],
+                    'widthValue'    => $itemsData['L_ITEMWIDTHVALUE'.$i],
+                    'heightValue'   => $itemsData['L_ITEMHEIGHTVALUE'.$i],
+                );
             }
         }
 
-        dump($items);
-        exit;
         return \Nette\ArrayHash::from($items);
     }
 
