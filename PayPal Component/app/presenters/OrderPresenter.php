@@ -60,10 +60,10 @@ final class OrderPresenter extends BasePresenter {
          *
          * For example:
          * $dbData = array(
-         *                  'payerID => $data['PAYERID'],
-         *                  'firstName => $data['FIRSTNAME'],
-         *                  'lastName => $data['LASTNAME'],
-         *                  'email' => $data['EMAIL'],
+         *                  'payerID => $data->payerID,
+         *                  'firstName => $data->firstName,
+         *                  'lastName => $data->lastName,
+         *                  'email' => $data->email,
          *                );
          *
          * $user = $this->context->model->createUser($dbData);
@@ -199,6 +199,14 @@ final class OrderPresenter extends BasePresenter {
     public function renderConfirm() {
 
         $response = $this->orderButton->getShippingDetails($this->presenter->session->getSection('paypal'));
+
+        if ($response->error) {
+
+            foreach ($response->errors as $error)
+                $this->flashMessage($error, 'warning');
+
+            $this->redirect('Order:');
+        }
 
         $this->template->data = $response->responseData;
         $this->template->cartItems = $response->cartItems;

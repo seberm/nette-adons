@@ -7,8 +7,11 @@
 
 namespace PayPal;
 
+use PayPal\Utils;
+
 use \Nette;
 use Nette\Object,
+    Nette\Iterators\CachingIterator,
     Nette\ArrayHash;
 
 
@@ -42,62 +45,45 @@ class Response extends Object {
        'COUNTRYCODE' => 'countryCode',
        'SHIPTONAME' => 'shipToName',
        'SHIPTOSTREET' => 'shipToStreet',
-       /*
-       SHIPTOCITY => 
-       SHIPTOSTATE => 
-       SHIPTOZIP => 
-       SHIPTOCOUNTRYCODE => 
-       SHIPTOCOUNTRYNAME => 
-       ADDRESSSTATUS => 
-       CURRENCYCODE => 
-        */
+       'SHIPTOCITY' => 'shipToCity',
+       'SHIPTOSTATE' => 'shipToState',
+       'SHIPTOZIP' => 'shipToZip',
+       'SHIPTOCOUNTRYCODE' => 'shipToCountryCode',
+       'SHIPTOCOUNTRYNAME' => 'shipToCountryName',
+       'ADDRESSSTATUS' => 'addressStatus',
+       'CURRENCYCODE' => 'currencyCode',
        'AMT' => 'amount',
        'SHIPPINGAMT' => 'shippingAmount',
-       //HANDLINGAMT => 
+       'HANDLINGAMT' => 'handlingAmount',
        'TAXAMT' => 'taxAmount',
-       /*
-       INSURANCEAMT => 
-       SHIPDISCAMT => 
-        */
-       'PAYMENTREQUEST_0_CURRENCYCODE' => 'currencyCode',
-       /*
-       'PAYMENTREQUEST_0_AMT' 
-       PAYMENTREQUEST_0_SHIPPINGAMT => "0.00" (4)
-       PAYMENTREQUEST_0_HANDLINGAMT => "0.00" (4)
-       PAYMENTREQUEST_0_TAXAMT => "0.00" (4)
-       PAYMENTREQUEST_0_INSURANCEAMT => "0.00" (4)
-       PAYMENTREQUEST_0_SHIPDISCAMT => "0.00" (4)
-       PAYMENTREQUEST_0_INSURANCEOPTIONOFFERED => "false" (5)
-       PAYMENTREQUEST_0_SHIPTONAME => "Otto Sabart" (11)
-       PAYMENTREQUEST_0_SHIPTOSTREET => "1 Maire-Victorin" (16)
-       PAYMENTREQUEST_0_SHIPTOCITY => "Toronto" (7)
-       PAYMENTREQUEST_0_SHIPTOSTATE => "Ontario" (7)
-       PAYMENTREQUEST_0_SHIPTOZIP => "M5A 1E1" (7)
-       PAYMENTREQUEST_0_SHIPTOCOUNTRYCODE => "CA" (2)
-       PAYMENTREQUEST_0_SHIPTOCOUNTRYNAME => "Canada" (6)
-       PAYMENTREQUESTINFO_0_ERRORCODE => "0"
+       'INSURANCEAMT' => 'insuranceAmount',
+       'SHIPDISCAMT' => 'shipDiscauntAmount',
+
+       /** @todo Request */
+        /*
+       'PAYMENTREQUEST_0_CURRENCYCODE' => 'requestCurrencyCode',
+       'PAYMENTREQUEST_0_AMT' => '',
+       'PAYMENTREQUEST_0_SHIPPINGAMT' => 
+       'PAYMENTREQUEST_0_HANDLINGAMT' => 
+       'PAYMENTREQUEST_0_TAXAMT' => 
+       'PAYMENTREQUEST_0_INSURANCEAMT' => 
+       'PAYMENTREQUEST_0_SHIPDISCAMT' => 
+       'PAYMENTREQUEST_0_INSURANCEOPTIONOFFERED' =>
+       'PAYMENTREQUEST_0_SHIPTONAME' => 
+       'PAYMENTREQUEST_0_SHIPTOSTREET' => 
+       'PAYMENTREQUEST_0_SHIPTOCITY' => 
+       'PAYMENTREQUEST_0_SHIPTOSTATE' => 
+       'PAYMENTREQUEST_0_SHIPTOZIP' => 
+       'PAYMENTREQUEST_0_SHIPTOCOUNTRYCODE' => 
+       'PAYMENTREQUEST_0_SHIPTOCOUNTRYNAME' => 
+       'PAYMENTREQUESTINFO_0_ERRORCODE' => 
         */
     );
 
 
     public function __construct($data) {
 
-        $this->responseData = $this->normalizeKeys($data);
-    }
-
-
-    private function normalizeKeys(array $data) {
-
-        $normalized = array();
-
-        foreach ($data as $key => $value) {
-
-            if (array_key_exists($key, $this->translationTable))
-                $normalized[$this->translationTable[$key]] = $value;
-            else $normalized[strtolower($key)] = $value;
-        }
-
-        return $normalized;
+        $this->responseData = Utils::translateKeys($data, $this->translationTable);
     }
 
 
@@ -160,10 +146,26 @@ class Response extends Object {
      */
     public function getCartItems() {
 
-        /**
-         * @todo Edit regular expressin - it's neccessary to control right item keys
-         */
-        $itemsData = $this->array_keys_by_ereg($this->responseData, '/^l_[a-z]+[0-9]+$/');
+        $patternKeys = '';
+        $iterator = new CachingIterator($this->CART_ITEM_KEYS);
+        for ($iterator->rewind(); $iterator->valid(); $iterator->next()) {
+
+            if ($iterator->isFirst())
+                $patternKeys .= '(';
+
+            $patternKeys .= $iterator->current();
+
+            if ($iterator->hasNext())
+                $patternKeys .= '|';
+
+            if ($iterator->isLast())
+                $patternKeys .= ')';
+        }
+
+        $pattern = '/^' .$patternKeys. '[0-9]+$/';
+
+        $itemsData = $this->array_keys_by_ereg($this->responseData, $pattern);
+
         if (empty($itemsData))
             return false;
 
@@ -212,25 +214,15 @@ class Response extends Object {
     }
 
 
-    /**
-     * @todo Maybe it's not neccesary do it like this..
-     */
     public function getToken() {
 
         return $this->getResponseData()->token;
     }
 
 
-    public function getPayerID() {
-
-        return $this->getResponseData()->payerID;
-    }
-    /* ******************************************** */
-
-
     public function getErrors() {
 
-        return $this->array_keys_by_ereg($this->responseData, '/^L_LONGMESSAGE[0-9]+/');
+        return $this->array_keys_by_ereg($this->responseData, '/^l_longmessage[0-9]+/');
     }
 
 

@@ -103,18 +103,24 @@ class ButtonOrder extends PayPalButton
     public function confirmExpressCheckout(Nette\Http\SessionSection $section) {
 
         // We have to get data before confirmation!
-        // It's because the PayPal token is after confirmation invalid
-        $data = $this->api->getShippingDetails($section);
+        // It's because the PayPal token destroyed after payment confirmation
+        // (Session section is destroyed)
+        $responseDetails = $this->api->getShippingDetails($section);
+        if ($responseDetails->error) {
 
-        $this->api->confirmExpressCheckout($section);
+            $this->onError($responseDetails->errors);
+            return;
+        }
 
-        if ($this->api->error) {
-            $this->onError($this->api->errors);
+        $responseConfirm = $this->api->confirmExpressCheckout($section);
+
+        if ($responseConfirm->error) {
+            $this->onError($responseConfirm->errors);
 			return;
         }
 
         // Callback
-        $this->onSuccessPayment($data);
+        $this->onSuccessPayment($responseDetails->responseData);
     }
 
 
@@ -136,15 +142,15 @@ class ButtonOrder extends PayPalButton
 
 	public function handleCancel()
 	{
-		$data = $this->api->getShippingDetails($this->presenter->session->getSection('paypal'));
+		$response = $this->api->getShippingDetails($this->presenter->session->getSection('paypal'));
 
-		if ($this->api->error) {
-            $this->onError($this->api->errors);
+		if ($response->error) {
+            $this->onError($response->errors);
 			return;
 		}
 
 		// Callback
-		$this->onCancel($data);
+		$this->onCancel($response);
 	}
 
 

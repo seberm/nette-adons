@@ -6,7 +6,8 @@
 
 namespace PayPal;
 
-use PayPal\Response;
+use PayPal\Response,
+    PayPal\Request;
 
 use \Nette;
 use Nette\Utils\Arrays,
@@ -114,12 +115,14 @@ class API extends Object
      */
     public function setExpressCheckout($shipping, $tax, $currencyCodeType, $paymentType, $returnURL, $cancelURL, $ses) { 
 
-        $query = array(
-                       'PAYMENTREQUEST_0_PAYMENTACTION' => $paymentType,
-                       'RETURNURL' => $returnURL,
-                       'CANCELURL' => $cancelURL,
-                       'PAYMENTREQUEST_0_CURRENCYCODE' => $currencyCodeType,
+        $data = array(
+                       'paymentAction' => $paymentType,
+                       'returnUrl' => $returnURL,
+                       'cancelUrl' => $cancelURL,
+                       'currencyCode' => $currencyCodeType,
                      );
+
+        $request = new Request($data);
 
         $id = 0;
         $itemsPrice = 0;
@@ -135,7 +138,7 @@ class API extends Object
             $id++;
         }
 
-        $query['PAYMENTREQUEST_0_ITEMAMT'] = $itemsPrice;
+        $query['amount'] = $itemsPrice;
         $query['PAYMENTREQUEST_0_TAXAMT'] = $tax;
         $query['PAYMENTREQUEST_0_SHIPPINGAMT'] = $shipping;
         $query['PAYMENTREQUEST_0_AMT'] = $query['PAYMENTREQUEST_0_ITEMAMT'] + $query['PAYMENTREQUEST_0_TAXAMT'] + $query['PAYMENTREQUEST_0_SHIPPINGAMT'];
@@ -164,6 +167,7 @@ class API extends Object
     public function doExpressCheckout($paymentAmount, $currencyCodeType, $paymentType, $returnURL, $cancelURL, $ses)
     {
 
+
         $query = array(
             'PAYMENTREQUEST_0_AMT' => $paymentAmount,
             'PAYMENTREQUEST_0_PAYMENTACTION' => $paymentType,
@@ -179,10 +183,7 @@ class API extends Object
             $ses->token = $response->token;
             $this->token = $ses->token;
 
-        } else {
-
-            return FALSE;
-        }
+        } 
 
         return $response;
     }
@@ -205,8 +206,6 @@ class API extends Object
 
         if ($response->success)
             $ses->remove();
-        else
-            return false;
            
         return $response;
     }
@@ -219,9 +218,7 @@ class API extends Object
         $response = $this->call('GetExpressCheckoutDetails', $query);
 
         if ($response->success)
-            $ses->payerID = $response->payerID;
-        else
-            return false;
+            $ses->payerID = $response->responseData->payerID;
 
         return $response;
     }
@@ -243,12 +240,7 @@ class API extends Object
             //'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly'
         );
 
-        $response = $this->call('DoExpressCheckoutPayment', $query);
-
-        if ($response->error)
-            return false;
-
-        return $response;
+        return $this->call('DoExpressCheckoutPayment', $query);
     }
 
 
@@ -414,12 +406,5 @@ class API extends Object
     {
         $this->sandbox = (bool)$opt;
         return $this;
-    }
-
-
-    private function value($key, /*\Nette\ArrayHash */$arr)
-    {
-        //return $arr->offsetExists($key) ? $arr->offsetGet($key) : '';
-return array_key_exists($key, $arr) ? $arr[$key] : '';
     }
 }
