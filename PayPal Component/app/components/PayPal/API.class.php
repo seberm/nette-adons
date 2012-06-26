@@ -12,16 +12,15 @@ use PayPal\Response,
 use \Nette;
 use Nette\Utils\Arrays,
     Nette\Object,
+    Nette\Http\SessionSection,
     Nette\Http\Url;
 
 
-class API extends Object
-{
+class API extends Object {
 
     /**
      * Tells which version of PayPay API we want use
      */
-    //const VERSION = '66';
     const VERSION = '72.0';
 
     // PayPal SandBox URLs
@@ -49,12 +48,13 @@ class API extends Object
 
     const PAYPAL_URL = 'https://www.paypal.com/cgi-bin/webscr';
 
-    private $sandbox = FALSE;
+    private $sandbox = false;
 
-    private $useProxy = FALSE;
+    private $useProxy = false;
 
     private $token;
     //public $invoiceValue = NULL;
+
 
     public function __construct($opts = array()) {
 
@@ -69,8 +69,8 @@ class API extends Object
      * @var mixed $val
      * @return PayPal\API (supports fluent interface)
      */
-    public function setData($opts = array(), $val = NULL)
-    {
+    public function setData($opts = array(), $val = NULL) {
+
         if (is_string($opts)) {
             $this->data[$opts] = $val;
         } elseif (is_array($opts)) {
@@ -81,8 +81,8 @@ class API extends Object
     }
 
 
-    public function getData($key = NULL)
-    {
+    public function getData($key = NULL) {
+
         if (is_string($key)) {
 
             if (array_key_exists($key, $this->data)) {
@@ -191,17 +191,21 @@ class API extends Object
     /**
      * Confirmation of paypal payment
      */
-    public function confirmExpressCheckout(\Nette\Http\SessionSection $ses) { 
+    public function confirmExpressCheckout(SessionSection $ses) { 
 
-        $query = array('PAYMENTREQUEST_0_AMT' => $ses->amount,
-                       'PAYERID' => $ses->payerID,
-                       'TOKEN' => $ses->token,
-                       'PAYMENTREQUEST_0_PAYMENTACTION' => $ses->paymentType,
-                       'PAYMENTREQUEST_0_CURRENCYCODE' => $ses->currencyCodeType,
-                       'IPADDRESS' => urlencode($_SERVER['SERVER_NAME']),
+        $query = array(
+                        'amount' => $ses->amount,
+                        'payerID' => $ses->payerID,
+                        'token' => $ses->token,
+                        'paymentAction' => $ses->paymentType,
+                        'currencyCode' => $ses->currencyCodeType,
+                        'ipAdress' => urlencode($_SERVER['SERVER_NAME']),
                      );
 
-        $response = $this->call('DoExpressCheckoutPayment', $query);
+        $request = new Request($query);
+        $request->setMethod('DoExpressCheckoutPayment'); // Same as $request->addQuery(array('method', '...'));
+
+        $response = $this->call($request);
 
         if ($response->success)
             $ses->remove();
@@ -212,9 +216,12 @@ class API extends Object
 
     public function getShippingDetails($ses)
     {
-        $query = array('TOKEN' => $ses->token);
+        $query = array(
+            'token' => $ses->token,
+            'method' => 'GetExpressCheckoutDetails', // Same as $request->setMethod('...');
+            );
 
-        $response = $this->call('GetExpressCheckoutDetails', $query);
+        $response = $this->call(new Request($query));
 
         if ($response->success)
             $ses->payerID = $response->responseData->payerID;
@@ -249,7 +256,7 @@ class API extends Object
     }
 
 
-    private function call($request) {
+    private function call(Request $request) {
 
         $ch = curl_init($this->endPoint);
 
@@ -279,7 +286,10 @@ class API extends Object
                     ));
 
         // POST data
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+        // Conversion to string is important!
+        // It's because it's called __toString magic method which calls
+        // in real $request->query->build();
+        curl_setopt($ch, CURLOPT_POSTFIELDS, (string) $request); 
 
         // Execute
         $responseNVP = curl_exec($ch);

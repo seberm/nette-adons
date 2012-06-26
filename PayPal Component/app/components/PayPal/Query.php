@@ -28,6 +28,8 @@ class Query extends Object {
            'shippingAmount' => 'PAYMENTREQUEST_0_SHIPPINGAMT',
            'amount' => 'PAYMENTREQUEST_0_AMT',
            'password' => 'PWD',
+           'payerID' => 'PAYERID',
+           'ipAdress' => 'IPADDRESS',
     );
 
 

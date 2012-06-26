@@ -73,6 +73,6 @@ class Request extends Object {
 
     public function __toString() {
 
-        return $this->query;
+        return $this->query->build();
     }
 }
