@@ -159,6 +159,8 @@ class Response extends Object {
         $items = array();
         $itemsCount = count($itemsData) / count($this->CART_ITEM_KEYS);
 
+        // We must control if the result of division is integer.
+        // Because if not, it means the count of keys in PayPal cart item changed.
         assert(is_int($itemsCount));
 
         for ($i = 0; $i < $itemsCount; ++$i) {
