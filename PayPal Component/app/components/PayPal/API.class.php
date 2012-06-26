@@ -168,15 +168,16 @@ class API extends Object {
 
 
         $query = array(
-            'PAYMENTREQUEST_0_AMT' => $paymentAmount,
-            'PAYMENTREQUEST_0_PAYMENTACTION' => $paymentType,
-            'RETURNURL' => $returnURL,
-            'CANCELURL' => $cancelURL,
-            'PAYMENTREQUEST_0_CURRENCYCODE' => $currencyCodeType,
-            'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
+            'amount' => $paymentAmount,
+            'paymentAction' => $paymentType,
+            'returnUrl' => $returnURL,
+            'cancelUrl' => $cancelURL,
+            'currencyCode' => $currencyCodeType,
+            'allowedPaymentMethod' => 'InstantPaymentOnly',
+            'method' => 'SetExpressCheckout',
         );
 
-        $response = $this->call('SetExpressCheckout', $query);
+        $response = $this->call(new Request($query));
 
         if ($response->success) {
             $ses->token = $response->token;
@@ -214,8 +215,8 @@ class API extends Object {
     }
 
 
-    public function getShippingDetails($ses)
-    {
+    public function getShippingDetails($ses) {
+
         $query = array(
             'token' => $ses->token,
             'method' => 'GetExpressCheckoutDetails', // Same as $request->setMethod('...');
@@ -232,21 +233,20 @@ class API extends Object {
 
     public function doPayment($paymentType, $ses) {
 
-        $details = $this->getShippingDetails($ses);
-
-        if (!$details)
-            return false;
+        /** @todo This communication is not neccessary! */
+        $responseDetails = $this->getShippingDetails($ses);
 
         $query = array(
-            'PAYMENTACTION' => $paymentType,
-            'PAYERID' => $details['PAYERID'],
-            'TOKEN' => $ses->token,
-            'AMT' => $details['AMT'],
-            'CURRENCYCODE' => $details['CURRENCYCODE'],
+            'paymentAction' => $paymentType,
+            'payerID' => $responseDetails->responseData->payerID,
+            'token' => $ses->token,
+            'amount' => $responseDetails->responseData->amount,
+            'currencyCode' => $responseDetails->responseData->currencyCode,
+            'method' => 'DoExpressCheckoutPayment',
             //'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly'
         );
 
-        return $this->call('DoExpressCheckoutPayment', $query);
+        return $this->call(new Request($query));
     }
 
 

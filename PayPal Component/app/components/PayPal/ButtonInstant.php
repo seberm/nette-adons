@@ -28,7 +28,7 @@ class ButtonInstant extends PayPalButton
 	public function renderPay()
 	{
 		$this->template->setFile(__DIR__ . '/pay.latte')
-			->render();
+			 ->render();
 	}
 
 
@@ -50,15 +50,16 @@ class ButtonInstant extends PayPalButton
 
 	public function initPayment(Form $paypalBuyForm)
 	{
-		$this->api->doExpressCheckout($this->amount,
-			$this->currencyCode,
-			$this->paymentType,
-			$this->buildUrl('processBuy'),
-			$this->buildUrl('cancel'),
-			$this->presenter->session->getSection('paypal'));
+		$response = $this->api->doExpressCheckout($this->amount,
+                                                $this->currencyCode,
+                                                $this->paymentType,
+                                                $this->buildUrl('processBuy'),
+                                                $this->buildUrl('cancel'),
+                                                $this->presenter->session->getSection('paypal'));
 
-		if ($this->api->error) {
-			$this->onError($this->api->errors);
+		if ($response->error) {
+
+			$this->onError($response->errors);
 			return;
 		}
 
@@ -84,47 +85,47 @@ class ButtonInstant extends PayPalButton
 
 	public function processPayment(Form $form)
 	{
-		$data = $this->api->doPayment(
+		$response = $this->api->doPayment(
 			$this->paymentType,
 			$this->presenter->session->getSection('paypal')
 		);
 
 
-		if ($this->api->error) {
-			$this->onError($this->api->errors);
+		if ($response->error) {
+			$this->onError($response->errors);
 			return;
 		}
 
 		// Callback
-		$this->onSuccessPayment($data);
+		$this->onSuccessPayment($response->responseData);
 	}
 
 
 	public function handleProcessBuy()
 	{
-		$data = $this->api->getShippingDetails($this->presenter->session->getSection('paypal'));
+		$response = $this->api->getShippingDetails($this->presenter->session->getSection('paypal'));
 
-		if ($this->api->error) {
-            $this->onError($this->api->errors);
+		if ($response->error) {
+            $this->onError($response->errors);
 			return;
 		}
 
 		// Callback
-		$this->onSuccessBuy($data);
+		$this->onSuccessBuy($response->responseData);
 	}
 
 
 	public function handleCancel()
 	{
-		$data = $this->api->getShippingDetails($this->presenter->session->getSection('paypal'));
+		$response = $this->api->getShippingDetails($this->presenter->session->getSection('paypal'));
 
-		if ($this->api->error) {
-            $this->onError($this->api->errors);
+		if ($response->error) {
+            $this->onError($response->errors);
 			return;
 		}
 
 		// Callback
-		$this->onCancel($data);
+		$this->onCancel($response->responseData);
 	}
 
 }

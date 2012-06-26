@@ -30,6 +30,7 @@ class Query extends Object {
            'password' => 'PWD',
            'payerID' => 'PAYERID',
            'ipAdress' => 'IPADDRESS',
+           'allowedPaymentMethod' => 'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD',
     );
 
 

@@ -78,6 +78,27 @@ class Response extends Object {
        'PAYMENTREQUEST_0_SHIPTOCOUNTRYNAME' => 
        'PAYMENTREQUESTINFO_0_ERRORCODE' => 
         */
+       'PAYMENTINFO_0_TRANSACTIONTYPE' => 'transactionType',
+       'PAYMENTINFO_0_PAYMENTTYPE' => 'paymentType',
+       /*
+   insuranceoptionselected => "false" (5)
+   shippingoptionisdefault => "false" (5)
+   paymentinfo_0_transactionid => "34L30484PN295671J" (17)
+   paymentinfo_0_transactiontype => "expresscheckout" (15)
+   paymentinfo_0_paymenttype => "instant" (7)
+   paymentinfo_0_ordertime => "2012-06-26T00:34:59Z" (20)
+   paymentinfo_0_amt => "34.67" (5)
+   paymentinfo_0_taxamt => "0.00" (4)
+   paymentinfo_0_currencycode => "EUR" (3)
+   paymentinfo_0_paymentstatus => "Pending" (7)
+   paymentinfo_0_pendingreason => "multicurrency" (13)
+   paymentinfo_0_reasoncode => "None" (4)
+   paymentinfo_0_protectioneligibility => "Eligible" (8)
+   paymentinfo_0_protectioneligibilitytype => "ItemNotReceivedEligible,UnauthorizedPaymentEligible" (51)
+   paymentinfo_0_securemerchantaccountid => "3BQUMDNDV8FWW" (13)
+   paymentinfo_0_errorcode => "0"
+   paymentinfo_0_ack => "Success" (7)
+        */
     );
 
 
