@@ -33,6 +33,7 @@
 
 <h2>Cart items</h2>
 <table border="1" cellspacing="0" cellpadding="0">
+{if count($cartItems)}
 <tr>
     <th>Name</th>
     <th>Quantity</th>
@@ -40,14 +41,19 @@
     <th>Description</th>
     {* ... *}
 </tr>
-{foreach $cartItems as $item}
+    {foreach $cartItems as $item}
+    <tr>
+        <td>{$item->name}</td>
+        <td>{$item->quantity}</td>
+        <td>{$item->amount}</td>
+        <td>{$item->description|truncate:30}</td>
+    </tr>
+    {/foreach}
+{else}
 <tr>
-    <td>{$item->name}</td>
-    <td>{$item->quantity}</td>
-    <td>{$item->amount}</td>
-    <td>{$item->description|truncate:30}</td>
+    <td>No cart items.</td>
 </tr>
-{/foreach}
+{/if}
 </table>
 
 {control cancelButton}

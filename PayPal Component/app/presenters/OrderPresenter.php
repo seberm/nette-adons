@@ -1,6 +1,7 @@
 <?php
 
-use PayPal\PayPalButton,
+use \PayPal,
+    PayPal\PayPalButton,
     PayPal\API;
 
 use Nette\Application\UI\Form,
@@ -17,6 +18,10 @@ final class OrderPresenter extends BasePresenter {
 
         parent::startup();
         $this->orderButton = $this->context->createButtonOrder();
+
+        // Called after successful confirmation
+		$this->orderButton->onSuccessPayment[] = callback($this, 'processPayment');
+
     }
 
 
@@ -40,12 +45,14 @@ final class OrderPresenter extends BasePresenter {
         // It's possible to set tax
         $button->tax = 3.1;
 
-        // If order success, call processOrder function
-        $button->onConfirmation[] = callback($this, 'confirmOrder');
-        //$button->onSuccessBuy[] = callback($this, 'processBuy');
-		$button->onSuccessPayment[] = callback($this, 'processPayment');
 
+        // Called If payment inicialization success
+        $button->onConfirmation[] = callback($this, 'confirmOrder');
+
+        // Called if user cancel order
         $button->onCancel[] = callback($this, 'cancelOrder');
+
+        // Called if some error occure (for example error in communication)
         $button->onError[] = callback($this, 'errorOccurred');
 
         return $button;
@@ -232,6 +239,9 @@ final class OrderPresenter extends BasePresenter {
 
 
     public function confirmPaymentFormSubmitted($form) {
+
+        // Called if some error occure (for example error in communication)
+        $this->orderButton->onError[] = callback($this, 'errorOccurred');
 
         try {
 

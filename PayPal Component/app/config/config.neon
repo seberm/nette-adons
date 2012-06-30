@@ -20,13 +20,13 @@ common:
 
     factories:
         buttonInstant:
-            class: \PayPal\ButtonInstant
+            class: \PayPal\Components\ButtonInstant
             setup:
                     - setCredentials(%paypal.api%)
                     - setSandBox(%paypal.sandbox%)
 
         buttonOrder:
-            class: \PayPal\ButtonOrder
+            class: \PayPal\Components\ButtonOrder
             setup:
                     - setCredentials(%paypal.api%)
                     - setSandBox(%paypal.sandbox%)
