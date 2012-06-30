@@ -9,7 +9,8 @@
     "require": {
 
         "php" : ">=5.3.2",
-        "nette/nette": "2.0.*"
+        "nette/nette": "2.0.*",
+        "nette/paypal": "1.0.0-alpha"
     },
 
     "autoload": {
