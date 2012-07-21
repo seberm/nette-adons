@@ -31,6 +31,9 @@ common:
                     - setCredentials(%paypal.api%)
                     - setSandBox(%paypal.sandbox%)
 
+                    # This option cause that you're not redirected back on your page for payment confirmation but you confirm payment directly on PayPal page
+                    #- setRedirectToConfirm(false)
+
 production < common:
     parameters:
         paypal:
