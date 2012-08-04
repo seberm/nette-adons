@@ -40,9 +40,9 @@ composer.lock
 vendor/
 
 ### Application ###
-temp/*
-!/temp/.htaccess
-!/temp/web.config
+*/temp/*
+!*/temp/.htaccess
+!*/temp/web.config
 
 /log/*
 !/log/.htaccess
