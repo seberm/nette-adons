@@ -1,8 +1,7 @@
 <?php
 
 use \PayPal,
-    PayPal\PayPalButton,
-    PayPal\API;
+    PayPal\API\API;
 
 use Nette\Application\UI\Form,
     Nette\Diagnostics\Debugger,
