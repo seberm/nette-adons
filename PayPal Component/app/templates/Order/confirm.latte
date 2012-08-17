@@ -3,60 +3,60 @@
 <h1 n:block="title">The confirmation page</h1>
 
 <p>
-    There are some basic details. In the debugbar in section 'variables' or in FireLog you can find many more details.
+	There are some basic details. In the debugbar in section 'variables' or in FireLog you can find many more details.
 </p>
 
 {* Dump PayPal data to our Nette debug bar *}
 
-{dump $data}
+    {dump $data}
 
 <h2>Order basic information</h2>
 <table border="1" cellspacing="0" cellpadding="0">
-<tr>
-    <td>Token is:</td>
-    <td>{$data->token}</td>
-</tr>
-<tr>
-    <td>Payer ID:</td>
-    <td>{$data->payerID}</td>
-</tr>
-<tr>
-    <td>Payer status:</td>
-    <td>{$data->payerStatus}</td>
-</tr>
-<tr>
-    <td>Price:</td>
-    <td>{$data->amount} {$data->currencyCode}</td>
-</tr>
+	<tr>
+		<td>Token is:</td>
+		<td>{$data->token}</td>
+	</tr>
+	<tr>
+		<td>Payer ID:</td>
+		<td>{$data->payerID}</td>
+	</tr>
+	<tr>
+		<td>Payer status:</td>
+		<td>{$data->payerStatus}</td>
+	</tr>
+	<tr>
+		<td>Price:</td>
+		<td>{$data->amount} {$data->currencyCode}</td>
+	</tr>
 </table>
 
 
 <h2>Cart items</h2>
 <table border="1" cellspacing="0" cellpadding="0">
-{if count($cartItems)}
-<tr>
-    <th>Name</th>
-    <th>Quantity</th>
-    <th>Amount</th>
-    <th>Description</th>
-    {* ... *}
-</tr>
-    {foreach $cartItems as $item}
-    <tr>
-        <td>{$item->name}</td>
-        <td>{$item->quantity}</td>
-        <td>{$item->amount}</td>
-        <td>{$item->description|truncate:30}</td>
-    </tr>
-    {/foreach}
-{else}
-<tr>
-    <td>No cart items.</td>
-</tr>
-{/if}
+    {if count($cartItems)}
+		<tr>
+			<th>Name</th>
+			<th>Quantity</th>
+			<th>Amount</th>
+			<th>Description</th>
+        {* ... *}
+		</tr>
+        {foreach $cartItems as $item}
+			<tr>
+				<td>{$item->name}</td>
+				<td>{$item->quantity}</td>
+				<td>{$item->amount}</td>
+				<td>{$item->description|truncate:30}</td>
+			</tr>
+        {/foreach}
+        {else}
+		<tr>
+			<td>No cart items.</td>
+		</tr>
+    {/if}
 </table>
 
-{control cancelButton}
-{control confirmButton}
+    {control cancelButton}
+    {control confirmButton}
 
 {/block}

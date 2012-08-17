@@ -1,6 +1,6 @@
 * {
-    padding:0px;
-    margin:0px;
+	padding: 0px;
+	margin: 0px;
 }
 
 /*
@@ -42,55 +42,53 @@ input.button.paymentCancel {
 
 */
 
-
 body {
-    background:#1D0C05;
-    color:#ffcd89;
+	background: #1D0C05;
+	color: #ffcd89;
 }
 
 a {
-    color:#ff9600;
-    text-decoration:none;
+	color: #ff9600;
+	text-decoration: none;
 }
 
 a:hover {
-    color:#f3f3f3;
-    text-decoration:underline;
+	color: #f3f3f3;
+	text-decoration: underline;
 }
 
 h1 {
-    font-size:35px;
-    font-weight:normal;
+	font-size: 35px;
+	font-weight: normal;
 }
 
 div#content {
-    margin:40px 0;
-    text-align:center;
-    clear:both;
+	margin: 40px 0;
+	text-align: center;
+	clear: both;
 }
 
 div#footer {
-    /* ... */
+	/* ... */
 }
 
 div#menu ul {
-    list-style:none;
-    text-align:center;
+	list-style: none;
+	text-align: center;
 
-    font-size:24px;
-    font-weight:bold;
-    overflow:hidden;
+	font-size: 24px;
+	font-weight: bold;
+	overflow: hidden;
 }
 
-
 div#menu ul li {
-    width:33%;
-    float:left;
+	width: 33%;
+	float: left;
 }
 
 .flash.info {
-    color: #008000;
-    background: #C6FFC9;
+	color: #008000;
+	background: #C6FFC9;
 }
 
 .flash.warning {
