@@ -3,13 +3,14 @@
 /**
  * My Application bootstrap file.
  */
+
 use Nette\Application\Routers\Route,
-    Nette\Diagnostics\Debugger;
+	Nette\Diagnostics\Debugger;
 
 // Load composer libs
 require LIBS_DIR . '/autoload.php';
 
-// Boot Nette Framework 
+// Boot Nette Framework
 require LIBS_DIR . '/nette/nette/Nette/loader.php';
 
 

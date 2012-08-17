@@ -1,5 +1,6 @@
 <?php
 
-class MainPresenter extends BasePresenter {
+class MainPresenter extends BasePresenter
+{
 
 }
