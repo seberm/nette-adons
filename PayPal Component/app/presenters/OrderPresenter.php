@@ -3,8 +3,8 @@
 use PayPal\API\API;
 
 use Nette\Application\UI\Form,
-	Nette\Diagnostics\Debugger,
-	Nette\Security\AuthenticationException;
+    Nette\Diagnostics\Debugger,
+    Nette\Security\AuthenticationException;
 
 
 final class OrderPresenter extends BasePresenter
@@ -18,7 +18,7 @@ final class OrderPresenter extends BasePresenter
 		parent::startup();
 		$this->orderButton = $this->context->createButtonOrder();
 
-        $this->orderButton->setSessionSection($this->context->session->getSection('paypal'));
+                $this->orderButton->setSessionSection($this->context->session->getSection('paypal'));
 
 		// Called after successful confirmation
 		$this->orderButton->onSuccessPayment[] = callback($this, 'processPayment');
@@ -240,9 +240,8 @@ final class OrderPresenter extends BasePresenter
 
 
 
-	public function confirmOrder($data)
+	public function confirmOrder(/*$data*/)
 	{
-		//unused($data);
 		$this->redirect('confirm');
 	}
 
@@ -314,7 +313,7 @@ final class OrderPresenter extends BasePresenter
 
 
 
-	public function cancelFormSubmitted($form)
+	public function cancelFormSubmitted(/*$form*/)
 	{
 		$this->flashMessage('Payment was canceled', 'warning');
 		$this->redirect(':' . $this->name . ':');

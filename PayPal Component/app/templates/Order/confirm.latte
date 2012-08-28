@@ -1,5 +1,4 @@
 {block content}
-
 <h1 n:block="title">The confirmation page</h1>
 
 <p>
@@ -7,8 +6,7 @@
 </p>
 
 {* Dump PayPal data to our Nette debug bar *}
-
-    {dump $data}
+{dump $data}
 
 <h2>Order basic information</h2>
 <table border="1" cellspacing="0" cellpadding="0">
@@ -56,7 +54,7 @@
     {/if}
 </table>
 
-    {control cancelButton}
-    {control confirmButton}
+{control cancelButton}
+{control confirmButton}
 
 {/block}

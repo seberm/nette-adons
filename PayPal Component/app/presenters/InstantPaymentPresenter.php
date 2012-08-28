@@ -1,7 +1,5 @@
 <?php
 
-use PayPal\API;
-
 use Nette\Diagnostics\Debugger;
 
 
