@@ -1,4 +1,6 @@
 ### Global gitingore ###
+#
+/PayPal Component/nbproject/private/
 
 # NetBeans
 build/
@@ -47,4 +49,3 @@ vendor/
 !/log/.htaccess
 !/log/web.config
 
-/PayPal Component/nbproject/private/
