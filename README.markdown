@@ -1,6 +1,6 @@
 # Nette Addons
 
-> * Author: Šabart Otto <seberm[at]gmail[dot]com>
+> * Author: Šabart Otto <seberm[at]seberm[dot]com>
 > * Jabber: seberm[at]jabber[dot]cz
 > * Web: http://www.seberm.com
 

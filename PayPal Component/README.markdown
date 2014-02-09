@@ -1,6 +1,6 @@
 # PayPalCheckout Nette component
 
-> * Author: Šabart Otto <seberm[at]gmail[dot]com>
+> * Author: Šabart Otto <seberm[at]seberm[dot]com>
 > * Jabber: seberm[at]jabber[dot]cz
 > * Contributors: Nobody (only for a while I hope :-))
 > * Web: http://www.seberm.com
@@ -8,7 +8,7 @@
 ## About addon
 > This component makes easier to add the PayPal checkout button to your Nette application.
 
-#### Copyright © 2012 Sabart Otto <seberm[at]gmail[dot]com>
+#### Copyright © 2012 Sabart Otto <seberm[at]seberm[dot]com>
 
 ### 1) Requirements
 Nette Framework 2.0.0 or higher with PHP 5.3 version
