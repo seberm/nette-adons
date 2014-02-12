@@ -2,6 +2,12 @@
     "name":"PayPal Component for Nette 2.0",
     "description":"Component for various PayPal payments",
     "version":"0.0.3",
+    "minimum-stability":"dev",
+
+    "support":{
+        "email":"seberm@seberm.com"
+    },
+
     "authors":[
         {
             "name":"Otto Šabart",
@@ -10,16 +16,18 @@
     ],
 
     "require":{
-
         "php":">=5.3.2",
-        "nette/nette":"2.0.*",
-        "nette/paypal":"1.0.0-beta"
+        "nette/nette":"2.1.*",
+        "nette/paypal":"dev-master"
+    },
+
+    "config": {
+        "vendor-dir": "libs"
     },
 
     "autoload":{
-
         "psr-0":{
-            "PayPal":"/libs"
+            "seberm":"others"
         }
     }
 

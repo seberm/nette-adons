@@ -1,12 +1,17 @@
-# Apache configuration file (see httpd.apache.org/docs/2.2/mod/quickreference.html)
+# Apache configuration file (see httpd.apache.org/docs/current/mod/quickreference.html)
 
 # disable directory listing
-Options -Indexes
+<IfModule mod_autoindex.c>
+	Options -Indexes
+</IfModule>
 
 # enable cool URL
 <IfModule mod_rewrite.c>
 	RewriteEngine On
 	# RewriteBase /
+
+	# prevents files starting with dot to be viewed by browser
+	RewriteRule /\.|^\. - [F]
 
 	# front controller
 	RewriteCond %{REQUEST_FILENAME} !-f
@@ -17,12 +22,4 @@ Options -Indexes
 # enable gzip compression
 <IfModule mod_deflate.c>
 	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript text/javascript application/javascript application/json
-</IfModule>
-
-# allow combined JavaScript & CSS. Inside of script.combined.js you could use <!--#include file="script.js" -->
-<IfModule mod_include.c>
-	<FilesMatch "\.combined\.(js|css)$">
-		Options +Includes
-		SetOutputFilter INCLUDES
-	</FilesMatch>
 </IfModule>

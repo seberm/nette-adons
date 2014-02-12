@@ -4,52 +4,46 @@
 # If you don't protect this directory from direct web access, anybody will be able to see your passwords.
 # http://nette.org/security-warning
 #
-common:
-    parameters:
-
-    php:
-        date.timezone: Europe/Prague
-        session.save_path: "%tempDir%/sessions"
-        # zlib.output_compression: yes
-
-    nette:
-        session:
-            autoStart: smart
-
-    services:
-
-    factories:
-        buttonInstant:
-            class: \PayPal\Components\Buttons\Instant
-            setup:
-                    - setCredentials(%paypal.api%)
-                    - setSandBox(%paypal.sandbox%)
-
-        buttonOrder:
-            class: \PayPal\Components\Buttons\Order
-            setup:
-                    - setCredentials(%paypal.api%)
-                    - setSandBox(%paypal.sandbox%)
-
-                    # This option cause that you're not redirected back on your page for payment confirmation but you confirm payment directly on PayPal page
-                    #- setRedirectToConfirm(false)
-
-production < common:
-    parameters:
-        paypal:
-            api:
-                username = ''
-                password = ''
-                signature = ''
-
-            sandbox = false # false is a default option
+parameters:
+    paypal:
+        api:
+            username = 'seberm_1332081338_biz_api1.gmail.com'
+            password = '1332081363'
+            signature = 'AWiH1IO0zFZrEQbbn0JwDZHbWukIAebmYjpOylRCqBGGgztea2bku.N4'
+        sandbox = true
 
 
-development < common:
-    parameters:
-        paypal:
-            api:
-                username = 'seberm_1332081338_biz_api1.gmail.com'
-                password = '1332081363'
-                signature = 'AWiH1IO0zFZrEQbbn0JwDZHbWukIAebmYjpOylRCqBGGgztea2bku.N4'
-            sandbox = true
+php:
+    date.timezone: Europe/Prague
+    # zlib.output_compression: yes
+
+nette:
+    application:
+        errorPresenter: Error
+        mapping:
+            *: App\*Module\*Presenter
+
+    session:
+        expiration: 14 days
+
+
+services:
+    - App\RouterFactory
+    router: @App\RouterFactory::createRouter
+
+    buttonInstant:
+        class: \PayPal\Components\Buttons\Instant
+        factory: Instant::createInstantButton
+        #setup:
+        #        - setCredentials(%paypal.api%)
+        #        - setSandBox(%paypal.sandbox%)
+
+    #buttonOrder:
+    #    class: \PayPal\Components\Buttons\Order
+    #    setup:
+    #            - setCredentials(%paypal.api%)
+    #            - setSandBox(%paypal.sandbox%)
+
+                # This option cause that you're not redirected back on your page for payment confirmation but you confirm payment directly on PayPal page
+                #- setRedirectToConfirm(false)
+

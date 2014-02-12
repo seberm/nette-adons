@@ -1,6 +1,6 @@
 # Composer files
 composer.lock
-vendor/
+libs/
 
 ### Application ###
 */temp/*
